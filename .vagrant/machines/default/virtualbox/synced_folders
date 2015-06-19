@@ -1,0 +1,1 @@
+{"virtualbox":{"/vagrant":{"guestpath":"/vagrant","hostpath":"C:/Users/chgt/Projects/webrtc-happy","disabled":false},"/home/vagrant/sample-app":{"create":true,"group":"vagrant","owner":"vagrant","guestpath":"/home/vagrant/sample-app","hostpath":"C:/Users/chgt/Projects/number-game/sample-app","disabled":false}}}
