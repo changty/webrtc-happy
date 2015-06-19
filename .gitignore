@@ -1,8 +1,6 @@
-.DS_Store
-/dist
-node_modules
-bower_components
-.sass-cache/
-logs/
-.config.js
 .vagrant
+node_modules
+.git
+DS_Store
+*.log
+npm-debug*

@@ -2,12 +2,21 @@
 # vi: set ft=ruby :
 
 $script = <<SCRIPT
+
 echo  ========= Install node ========
+
  sudo apt-get update
  sudo apt-get install -y npm
  sudo npm cache clean -f
  sudo npm install -g n
  sudo n stable
+
+ echo  ========= Install node plugins ========
+
+ sudo npm install -g nodemon
+ sudo npm install -g gulp
+ sudo npm install -g bower
+ sudo npm install -g mocha
 
  echo  ========= Install mongo ========
 
@@ -20,9 +29,9 @@ echo  ========= Install git ========
 
 sudo apt-get install -y git
 
-echo echo  ========= Install node ========
+echo echo  ========= Install redis ========
 
-sudo apt-get install redis-server
+sudo apt-get install -y redis-server 
 
 echo  ========= Install appgyver ========
 
@@ -60,6 +69,8 @@ Vagrant.configure(2) do |config|
   # config.vm.network "private_network", ip: "192.168.33.10"
   config.vm.network :forwarded_port, host: 8080, guest: 80
   config.vm.network :forwarded_port, host: 13303, guest: 13303
+  config.vm.network :forwarded_port, host: 3333, guest: 3333
+
   config.vm.network :forwarded_port, host: 4567, guest: 4567
 
   # Create a public network, which generally matched to bridged network.
