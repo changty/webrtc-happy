@@ -5,3 +5,4 @@ bower_components
 .sass-cache/
 logs/
 .config.js
+.vagrant
