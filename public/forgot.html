@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>WebRTC Happy - Reset password</title>
+
+    <link type="text/css" rel="stylesheet" href="/components/materialize/dist/css/materialize.min.css"  media="screen,projection"/>
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+	<link rel="stylesheet" type="text/css" href="/stylesheets/style.css"/>
+</head>
+    <body class="happy-dark" ng-app="WebRTCHappy">
+
+
+	    <div class="container" ng-controller="loginCtrl">
+		   <h1 class="white-text center">Reset password</h1>
+		
+
+			<div class="row">
+		   		<form name="resetPwForm" class="col s12" ng-submit="resetPassword(resetPwForm)" method="post">
+
+			      <div class="row center">
+			        <div class="input-field col s12">
+			        	<i class="mdi-action-lock-open prefix"></i>
+			         	<input name="password" id="password" type="password" class="validate" ng-minlength="6" ng-model="reset.password" required>
+			          	<label for="password">Password</label>
+			        </div>
+			      </div>
+
+			   	<div class="row" ng-hide="hideErrorMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel red lighten-4">
+			          <span class="black-text" ng-bind-html="errormessage | sanitize">
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+			   	<div class="row" ng-hide="hideSuccessMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel teal">
+			          <span class="white-text" ng-bind-html="successmessage | sanitize">
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+				    <button ng-disabled="resetPwForm.password.$invalid || resetPwForm.password.$error.minglength" class="btn waves-effect waves-light btn-large center" type="submit">Set new password
+					    <i class="mdi-content-send right"></i>
+					  </button>
+
+		   		</form>
+
+		   	</div>
+		</div>
+
+	    <script src="/components/jquery/dist/jquery.min.js"></script>
+	    <script src="/components/materialize/dist/js/materialize.min.js"></script>
+	    <script src="/components/angular/angular.js"></script>
+	    <script src="/scripts/WebRTCHappy.js"></script>
+	    <script src="/scripts/controllers/loginCtrl.js"></script>
+
+	</body>
+</html>

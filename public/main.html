@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>WebRTC Happy example</title>
+
+    <link type="text/css" rel="stylesheet" href="/components/materialize/dist/css/materialize.min.css"  media="screen,projection"/>
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+	<link rel="stylesheet" type="text/css" href="/stylesheets/style.css"/>
+</head>
+    <body class="" ng-app="WebRTCHappy">
+
+    <div ng-controller="mainCtrl">
+	    <nav class="happy-dark">
+			<ul id="slide-out" class="side-nav">
+			    <li><a href="#!">First Sidebar Link</a></li>
+			    <li class="brown lighten-5"><a href="/api/logout">Logout</a></li>
+
+			</ul>
+
+		  <a href="#" data-activates="slide-out" class="button-collapse show-on-large"><i class="mdi-navigation-menu"></i></a>
+	    </nav>
+
+	   	<div class="container">
+	   		<h1>{{fname}} {{lname}}</h1>
+	   	</div>
+	</div>
+
+
+	    <script src="/components/jquery/dist/jquery.min.js"></script>
+	    <script src="/components/materialize/dist/js/materialize.min.js"></script>
+	    <script src="/components/angular/angular.js"></script>
+	    <script src="/scripts/WebRTCHappy.js"></script>
+	    <script src="/scripts/controllers/mainCtrl.js"></script>
+
+	</body>
+</html>

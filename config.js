@@ -3,5 +3,5 @@ module.exports = {
 	redisHost: "localhost",
 	redisPort: 6379,
 	mongoURL: 'mongodb://localhost/happy',
-	salt: 'salt'
+	salt: 'j2löjASDF309asfj1"#12312akjf09JKjl3ii'
 }

@@ -1,29 +1,185 @@
 <!DOCTYPE html>
-
 <html>
+<head>
+	<title>WebRTC Happy example</title>
 
-	<head>
-		<title>WebRTC Happy example</title>
-		<link rel="stylesheet" type="text/css" href="stylesheets/style.css"/>
-	</head>
+    <link type="text/css" rel="stylesheet" href="/components/materialize/dist/css/materialize.min.css"  media="screen,projection"/>
 
-	<body>
-		<h1>Static example page</h1>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-		<form action="/api/login" method="post">
-		    <div>
-		        <label>Username:</label>
-		        <input type="text" name="username"/>
-		    </div>
-		    <div>
-		        <label>Password:</label>
-		        <input type="password" name="password"/>
-		    </div>
-		    <div>
-		        <input type="submit" value="Log In"/>
-		    </div>
-		</form>
+	<link rel="stylesheet" type="text/css" href="/stylesheets/style.css"/>
+</head>
+
+<body class="happy-dark" ng-app="WebRTCHappy">
+
+    <div class="container" ng-controller="loginCtrl">
+	   	<h1 class="happy white-text">happy</h1>
+
+	   		<!-- login form -->
+		   	<div ng-hide="hideLogin" class="row">
+		   		<form name="loginform" class="col s12" action="/api/login" method="post">
+
+		   		<!-- email/username -->
+			      <div class="row">
+			        <div class="input-field col s12">
+			        	<i class="mdi-communication-email prefix"></i>
+			         	<input name="username" id="email" type="email" class="validate" required>
+			         	<label for="email">Email</label>
+			        </div>
+			      </div>
+
+			      <!-- password -->
+			      <div class="row">
+			        <div class="input-field col s12">
+			        	<i class="mdi-action-lock-open prefix"></i>
+			         	<input name="password" id="password" type="password" class="validate" required>
+			          	<label for="password">Password</label>
+			        </div>
+			      </div>
+
+			      <!-- Submit button -->
+				    <button ng-disabled="loginform.username.$invalid || loginform.password.$invalid" class="btn waves-effect waves-light btn-large center" type="submit">login
+					    <i class="mdi-content-send right"></i>
+					  </button>
+
+		   		</form>
+
+		   		<!-- buttons for new user and forgotten password -->
+		   		<div class="row">
+		   			<div class="col s6 left-align white-text"><a ng-click="showForgot()" href="#">Forgot password?</a></div>
+		   			<div class="col s6 right-align white-text"><a ng-click="showNew()" href="#">Are you new?</a></div>
+		   		</div>
+
+		   	</div> <!-- end of login screen -->
+
+
+		   	<!-- Forgot password view --> 
+		   	<div ng-hide="hideForgotPassword" class="row">
+			   	<form name="forgot" class="col s12" ng-submit="forgotSubmit()" method="post">
+
+		   		<!-- email address where the forgotten password should be sent -->
+				<div class="row">
+			        <div class="input-field col s12">
+			        	<i class="mdi-communication-email prefix"></i>
+			         	<input name="email" id="email" type="email" class="validate"  ng-model="forgotPw.email" required />
+			         	<label for="email">Email</label>
+			        </div>
+			      </div>
+
+			   	<div class="row" ng-hide="hideErrorMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel red lighten-4">
+			          <span class="black-text">{{errormessage}}
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+			   	<div class="row" ng-hide="hideSuccessMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel teal">
+			          <span class="white-text">{{successmessage}}
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+
+				      <!-- submit button -->
+					  <div class="row">
+			  			  <button ng-disabled="forgotPw.email.$invalid" class="btn waves-effect waves-light btn-large center" type="submit">Reset password
+					    <i class="mdi-content-send right"></i>
+					  </button>
+					  </div>
+			   	</form>
+
+			   	<!-- show login, hide forgot password -->
+			   	<div class="row center-align">
+					<a href="#" ng-click="showLogin()" class="white-text">Login</a>
+				</div>
+		   	</div> <!-- end of forgot password -->
+
+
+		   	<!-- register as a new user -->
+		   	<div ng-hide="hideNewUser" class="row">
+
+			   	<form name="register" class="col s12" ng-submit="submitNewUser(myForm)" method="post">
+
+			   		<!-- First name -->
+				 	<div class="row">
+				       <div class="input-field col s6">
+    				     <i class="mdi-content-create prefix"></i>
+				         <input name="fname" id="first_name" type="text" pattern=".{2,}" class="validate" ng-model="newUser.fname" required>
+				         <label for="first_name">First Name</label>
+				       </div>
+
+				       <!-- Last name -->
+				       <div class="input-field col s6">
+				         <i class="mdi-content-create prefix"></i>
+				         <input name="lname" id="last_name" type="text" pattern=".{2,}" class="validate" ng-model="newUser.lname" required>
+				         <label for="last_name">Last Name</label>
+				       </div>
+				     </div>
+
+			   		<!-- email -->
+					<div class="row">
+				        <div class="input-field col s12">
+				        	<i class="mdi-communication-email prefix"></i>
+				         	<input name="email" id="email" type="email" class="validate" ng-model="newUser.email" required>
+				         	<label for="email">Email</label>
+				        </div>
+				      </div>
+
+
+				      <!-- password -->
+				      <div class="row">
+				        <div class="input-field col s12">
+				        	<i class="mdi-action-lock-open prefix"></i>
+				         	<input name="password" id="password" type="password" class="validate" ng-model="newUser.password" ng-minlength="6" required>
+				          	<label for="password">Password</label>
+				        </div>
+				      </div>
+
+
+			   	<div class="row" ng-hide="hideErrorMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel red lighten-4">
+			          <span class="black-text">{{errormessage}}
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+			   	<div class="row" ng-hide="hideSuccessMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel teal">
+			          <span class="white-text">{{successmessage}}
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+				     <div class="row">
+					    	<button ng-disabled="register.fname.$invalid || register.lname.$invalid || register.email.$invalid || register.password.$invalid" class="btn waves-effect waves-light btn-large center" type="submit">Register
+						    <i class="mdi-content-send right"></i>
+						  </button>
+					</div>
+			   	</form>
+
+			   	<!-- show login screen -->
+			   	<div class="row center-align">
+					<a href="#" ng-click="showLogin()" class="white-text">Login</a>
+				</div>	
+		   	</div>
+
+		</div> <!-- end of content -->
+
+
+	    <script src="/components/jquery/dist/jquery.min.js"></script>
+	    <script src="/components/materialize/dist/js/materialize.min.js"></script>
+	    <script src="/components/angular/angular.js"></script>
+	    <script src="/scripts/WebRTCHappy.js"></script>
+	    <script src="/scripts/controllers/loginCtrl.js"></script>
 
 	</body>
-
 </html>

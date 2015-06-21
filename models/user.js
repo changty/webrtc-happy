@@ -10,18 +10,13 @@ var UserSchema = new Schema({
 	password: String,
 	fname: String,
 	lname: String, 
+	contacts: [String],
 	happy_addr: {type: String, unique: true}
 });
 
 UserSchema.methods.validatePassword = function(password) {
 
 	var pw = config.salt + password + this.email;
-	// bcrypt.compare(pw, this.password, function(err, res) {
-	// 	if(err) {
-	// 		console.log(">> BCRYPT: error comparing passwords");
-	// 	}
-	// 	return res;
-	// });
 
 	return bcrypt.compareSync(pw, this.password);
 }
@@ -32,28 +27,39 @@ UserSchema.methods.setPassword = function(password) {
 	this.password = bcrypt.hashSync(pw, salt); 
 }
 
+UserSchema.methods.getPassword = function(password) {
+	var pw = config.salt + password + this.email; 
+	salt = bcrypt.genSaltSync(10);
+	return bcrypt.hashSync(pw, salt); 
+}
+
+UserSchema.methods.getContacts = function() {
+	var self = this; 
+
+	mongoose.models["User"].find({});
+}
+
 UserSchema.pre("save", function(next, done) {
    var self = this;
 
     mongoose.models["User"].findOne({email : this.email}, 'email', function(err, results) {
-        if(err) {
-            next(err);
-        } else if(results) {
-            self.invalidate("email", "email must be unique");
-            next(new Error("email must be unique"));
-        } else {
-            next();
-        }
+       if(this.isNew) {
+	        if(err) {
+	            next(err);
+	        } else if(results) {
+	            self.invalidate("email", "email must be unique");
+	            var error = new Error('Email already in use'); 
+	            error.type = 'emailInUse';
+	            next(error);
+	        } else {
+	            next();
+	        }
+    	}
+    	else {
+    		next();
+    	}
     });
 });
 UserSchema.plugin(timestamps); 
 
 module.exports = mongoose.model('User', UserSchema);
-
-// j2löjASDF309asfj1"#12312akjf09JKjl3iieinarieinari.kurvinen@gmail.com
-// $2a$10$.J51/WnCLHrPgwBZ8VtLKOLE0usTl4AEgFXqxvtjrdwhe/LbgXjCW
-
-// j2löjASDF309asfj1"#12312akjf09JKjl3iieinarieinari.kurvinen@gmail.com
-// $2a$10$.J51/WnCLHrPgwBZ8VtLKOLE0usTl4AEgFXqxvtjrdwhe/LbgXjCW
-
-// $2a$10$DbSb4WddZBXiReMFTh5kl.yS3xUgRS.7vczN/x98uhukPYoEBSAK.

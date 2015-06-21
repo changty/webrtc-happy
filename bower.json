@@ -1,0 +1,25 @@
+{
+  "name": "webrtc-happy",
+  "version": "0.0.1",
+  "homepage": "https://github.com/changty/webrtc-happy",
+  "moduleType": [
+    "node"
+  ],
+  "authors": [
+    "Einari Kurvinen",
+    "Rolf Lindén"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.4.1",
+    "materialize": "~0.96.1",
+    "jquery": "~2.1.4"
+  }
+}

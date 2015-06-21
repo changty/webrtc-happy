@@ -1,4 +1,49 @@
-body {
-	font-family: Arial, Verdana, Tahoma;
-	background: #f1f1f1
+@import url(http://fonts.googleapis.com/css?family=Sacramento);
+
+.happy-dark {
+	background: #2F2637;
 }
+
+.happy {
+	text-align:center;
+	font-family: Sacramento; 
+	font-size: 20vmin;
+	line-height: 20vmin;
+}
+
+.center {
+	position:relative;
+	margin-left: 50% !important;
+	transform: translateX(-50%) !important;
+}
+
+  /* label color */
+   .input-field label {
+     color: #fff;
+   }
+   /* label focus color */
+   .input-field input[type=text]:focus + label {
+     color: #fff;
+   }
+   /* label underline focus color */
+   .input-field input[type=text]:focus {
+     border-bottom: 1px solid #000;
+     box-shadow: 0 1px 0 0 #000;
+     color: #fff;
+   }
+   /* valid color */
+   .input-field input[type=text].valid {
+     border-bottom: 1px solid #FFF;
+     box-shadow: 0 1px 0 0 #000;
+     color: #fff;
+   }
+   /* invalid color */
+   .input-field input[type=text].invalid {
+     border-bottom: 1px solid #000;
+     box-shadow: 0 1px 0 0 #000;
+     color: #fff;
+   }
+   /* icon prefix focus color */
+   .input-field .prefix.active {
+     color: #fff;
+   }

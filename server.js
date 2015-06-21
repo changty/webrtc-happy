@@ -57,7 +57,6 @@ app.use(flash());
 // add passport strategies
 passport.use(new LocalStrategy(
 	function(username, password, done) {
-		console.log("finding user: ", username, password);
 		User.findOne({ email: username}, function(err, user) {
 			if (err) { return done(err); }
 
@@ -83,6 +82,13 @@ passport.deserializeUser(function(id, done) {
 		done(err, user);
 	});
 });
+
+// Simple route middleware to ensure user is authenticated.
+passport.ensureAuthenticated = function(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  req.session.error = 'Please login!';
+  res.redirect('/');
+}
 
 // Initialize socket.io and share express session
 io.use(socketioRedis.authorize({
@@ -127,10 +133,22 @@ staticFiles.use(function(req, res, next) {
 	next();
 });
 
+
+// serve main view or login screen
+staticFiles.get('/', function(req, res) {
+	if(req.isAuthenticated()) {
+		res.sendFile(__dirname + '/public/' + 'main.html');	
+	}
+	else {
+		res.sendFile(__dirname + '/public/' + 'index.html');
+	}
+});
+
 // load all the routes
 require('./routes')(router, passport);
 // enable serving static files from public folder
 staticFiles.use(express.static(__dirname + '/public'));
+
 
 app.use('/api', router); 
 app.use('/', staticFiles); 
