@@ -12,19 +12,117 @@
     <body class="" ng-app="WebRTCHappy">
 
     <div ng-controller="mainCtrl">
+
+		<!-- Dropdown Structure -->
+		<ul id="userdropdown" class="dropdown-content">
+		  <li><a ng-click="showAccount()" href="#">Account</a></li>
+		  <li class="divider"></li>
+		  <li><a href="/api/logout">Logout</a></li>
+		</ul>
+
 	    <nav class="happy-dark">
-			<ul id="slide-out" class="side-nav">
-			    <li><a href="#!">First Sidebar Link</a></li>
-			    <li class="brown lighten-5"><a href="/api/logout">Logout</a></li>
+	    	<div class="row">
+				<div id="slide-out" class="side-nav">
 
-			</ul>
+				<form>
+			        <div class="input-field teal">
+			          <input id="search" type="search" required>
+			          <label for="search"><i class="mdi-action-search"></i></label>
+			          <i class="mdi-navigation-close"></i>
+			        </div>
+			    </form>
+					<ul class="results">
+				    </ul>
+				</div>
 
-		  <a href="#" data-activates="slide-out" class="button-collapse show-on-large"><i class="mdi-navigation-menu"></i></a>
+		  		<a ng-click="focusSearch()" href="#" data-activates="slide-out" class="button-collapse show-on-large col s1"><i class="mdi-content-add"></i></a>
+
+				<ul class="right hide-on-med-and-down">
+			      <!-- Dropdown Trigger -->
+			      <li><a class="dropdown-button" href="#" data-activates="userdropdown">{{fname}} {{lname}}<i class="mdi-navigation-arrow-drop-down right"></i></a></li>
+				</ul>
+   		 </div><!-- row -->
 	    </nav>
 
-	   	<div class="container">
-	   		<h1>{{fname}} {{lname}}</h1>
-	   	</div>
+	   	<div class="container" ng-hide="hideRecents">
+	   		<h1>Recent chats</h1>
+		</div>
+
+	   	<div class="container" ng-hide="hideAccount">
+	   		<h1>Account settings</h1>
+
+ 				<form name="account" class="col s12" ng-submit="updateUserInfo(account)" method="post">
+
+			   		<!-- First name -->
+				 	<div class="row">
+				       <div class="input-field col s6">
+    				     <i class="mdi-content-create prefix"></i>
+				         <input name="fname" id="first_name" type="text" pattern=".{2,}" class="validate" ng-model="fname">
+				         <label for="first_name" class="active">First Name</label>
+				       </div>
+
+				       <!-- Last name -->
+				       <div class="input-field col s6">
+				         <i class="mdi-content-create prefix"></i>
+				         <input name="lname" id="last_name" type="text" pattern=".{2,}" class="validate" ng-model="lname">
+				         <label class="active" for="last_name">Last Name</label>
+				       </div>
+				     </div>
+
+			   		<!-- email -->
+					<div class="row">
+				        <div class="input-field col s12">
+				        	<i class="mdi-communication-email prefix"></i>
+				         	<input name="email" id="email" type="email" class="validate" ng-model="email">
+				         	<label ng-class="active" class="active" for="email">Email</label>
+				        </div>
+				      </div>
+
+
+				      <!-- password -->
+				      <div class="row">
+				        <div class="input-field col s12">
+				        	<i class="mdi-action-lock-open prefix"></i>
+				         	<input name="password" id="password" type="password" class="validate" ng-model="password" pattern=".{6,}" ng-minlength="6" >
+				          	<label for="password">Password</label>
+				        </div>
+				      </div>
+
+
+			   	<div class="row" ng-hide="hideErrorMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel red lighten-4">
+			          <span class="black-text">{{errormessage}}
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+			   	<div class="row" ng-hide="hideSuccessMsg">
+			      <div class="col s12 m5 center">
+			        <div class="card-panel teal">
+			          <span class="white-text">{{successmessage}}
+			          </span>
+			        </div>
+			      </div>
+			    </div>
+
+				     <div class="row">
+				     	<div class="col s6">
+					    	<button  class="btn waves-effect waves-light btn-large center" type="submit">save
+						    <i class="mdi-content-send right"></i>
+						  </button>
+						</div>
+
+						<div class="col s6">
+							<button ng-click="showRecents()" class="btn waves-effect waves-light btn-large center">cancel <i class="mdi-navigation-close left"></i></button>
+						</div>
+					</div>
+			   	</form>
+
+
+		</div>
+
 	</div>
 
 

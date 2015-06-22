@@ -162,7 +162,47 @@ module.exports = function(router, passport) {
 
 	router.get('/user', function(req, res) {
 		res.json( {fname: req.user.fname, lname: req.user.lname, email: req.user.email, contacts: req.user.contacts, username: req.user.username, happy_addr: req.user.happy_addr});
-	})
+	}); 
+
+	router.post('/updateuser', function(req, res) {
+		var data = {
+			 fname: req.body.fname, 
+			 lname: req.body.lname, 
+			 email: req.body.email, 
+			 password: req.body.password
+		}; 
+
+		console.log("data: ", data, req.user._id);
+		User.findOne({_id: req.user._id}, function( err, user) {
+			if(err) {
+				console.log(err); 
+				res.status(500).send('err');
+			}
+			else if(!user) {
+				res.status(500).send('user not found'); 
+			}
+			else {
+				user.fname = data.fname; 
+				user.lname = data.lname; 
+				user.email = data.email; 
+				if(data.password) {
+					user.setPassword(data.password); 
+				}
+
+				user.save(function(err) {
+					if(err) {
+						console.log('err');
+						res.status(500).send('email in use'); 
+					}
+					else {
+						res.send("ok");
+					}
+				});
+
+
+			}
+		})
+	});
 
 	function guid() {
 		  function s4() {
