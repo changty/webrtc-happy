@@ -19,35 +19,54 @@
 
   /* label color */
 .happy-dark .input-field label {
-     color: #fff;
+	 color: #fff;
    }
    /* label focus color */
 .happy-dark   .input-field input[type=text]:focus + label {
-     color: #fff;
+	 color: #fff;
    }
    /* label underline focus color */
 .happy-dark  .input-field input[type=text]:focus {
-     border-bottom: 1px solid #000;
-     box-shadow: 0 1px 0 0 #000;
-     color: #fff;
+	 border-bottom: 1px solid #000;
+	 box-shadow: 0 1px 0 0 #000;
+	 color: #fff;
    }
    /* valid color */
 .happy-dark   .input-field input[type=text].valid {
-     border-bottom: 1px solid #FFF;
-     box-shadow: 0 1px 0 0 #000;
-     color: #fff;
+	 border-bottom: 1px solid #FFF;
+	 box-shadow: 0 1px 0 0 #000;
+	 color: #fff;
    }
    /* invalid color */
 .happy-dark   .input-field input[type=text].invalid {
-     border-bottom: 1px solid #000;
-     box-shadow: 0 1px 0 0 #000;
-     color: #fff;
+	 border-bottom: 1px solid #000;
+	 box-shadow: 0 1px 0 0 #000;
+	 color: #fff;
    }
    /* icon prefix focus color */
 .happy-dark   .input-field .prefix.active {
-     color: #fff;
+	 color: #fff;
    }
 
 .nopadding {
 	padding:0 !important;
+}
+
+
+.localVideo {
+	width: 200px; 
+	height: 200px;
+}
+
+.remoteVideo {
+	width: 500px;
+	height: 500px;
+}
+
+.connectionstate {
+	position: absolute;
+	top: 0px;
+	width: 100%;
+	text-align: center;
+	color: #fff
 }

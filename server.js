@@ -18,6 +18,7 @@ var session			= require('express-session');
 var RedisStore		= require('connect-redis')(session);
 var socketioRedis	= require('passport-socketio-redis');
 var flash			= require('express-flash');
+var cors 			= require('cors');
 
 // passport startegies
 var LocalStrategy	= require('passport-local').Strategy;
@@ -30,6 +31,8 @@ var staticFiles		= express.Router();
 var mongoose		= require('mongoose'); 
 mongoose.connect(config.mongoURL);
 var User 			= require('./models/user');
+
+var uuid			= require('node-uuid');
 
 
 app.use(bodyParser.json());
@@ -52,6 +55,17 @@ app.use(session({
 app.use(passport.initialize()); 
 app.use(passport.session());
 app.use(flash());
+
+var whitelist = ['http://localhost', 'http://192.168.0.10', 'http://localhost:3333', 'http://192.168.0.10:3333'];
+var corsOptions = {
+	origin: function(origin, callback){
+  			var originIsWhitelisted = whitelist.indexOf(origin) !== -1;
+    		callback(null, originIsWhitelisted);
+  		},
+  	credentials: true
+};
+app.use(cors(corsOptions));
+
 
 
 // add passport strategies
@@ -90,6 +104,7 @@ passport.ensureAuthenticated = function(req, res, next) {
   res.redirect('/');
 }
 
+
 // Initialize socket.io and share express session
 io.use(socketioRedis.authorize({
 	passport: passport,
@@ -107,19 +122,171 @@ function authorizeSuccess(data, accept) {
 	accept();
 }
 
+// io session authorization failed
 function authorizeFail(data, message, error, accept) {
 	if(error) {
 		accept(new Error(message)); 
 	}
-
 	console.log('>> IO: \t', 'Authorization failed');
 }
 
+// *****************************
+//	Socket.io methods
+//	-----------------
+// *****************************
+
+function describeRoom(name) {
+    var clients = io.sockets.clients(name);
+    var result = {
+        clients: {}
+    };
+
+    // Shows if client has video, audio or screen shared
+    clients.forEach(function (client) {
+        result.clients[client.id] = client.resources;
+    });
+    return result;
+}
+
+function clientsInRoom(name) {
+    return io.sockets.clients(name).length;
+}
+
+function safeCb(cb) {
+    if (typeof cb === 'function') {
+        return cb;
+    } else {
+        return function () {};
+    }
+}
+
+
 
 // Start socket server 
-io.on('connection', function(socket) {
-	console.log('>> IO: \t ---- User connected');
+io.on('connection', function(client) {
+	console.log('>> IO: \t ---- Client connected');
+
+	client.resources = {
+		screen: false,
+		video: true,
+		audio: false
+	};
+
+
+    // pass a message to another id
+    client.on('message', function (details) {
+        if (!details) return;
+
+        var otherClient = io.sockets.sockets[details.to];
+        if (!otherClient) return;
+
+        details.from = client.id;
+        otherClient.emit('message', details);
+    });
+
+    client.on('shareScreen', function () {
+        client.resources.screen = true;
+    });
+
+    client.on('unshareScreen', function (type) {
+        client.resources.screen = false;
+        removeFeed('screen');
+    });
+
+    client.on('join', join);
+
+    function removeFeed(type) {
+        if (client.room) {
+            io.sockets.in(client.room).emit('remove', {
+                id: client.id,
+                type: type
+            });
+            if (!type) {
+                client.leave(client.room);
+                client.room = undefined;
+            }
+        }
+    }
+
+    function join(name, cb) {
+        // sanity check
+        if (typeof name !== 'string') return;
+        // check if maximum number of clients reached
+        if (config.rooms && config.rooms.maxClients > 0 && 
+          clientsInRoom(name) >= config.rooms.maxClients) {
+            safeCb(cb)('full');
+            return;
+        }
+        // leave any existing rooms
+        removeFeed();
+        safeCb(cb)(null, describeRoom(name));
+        client.join(name);
+        client.room = name;
+    }
+
+    // we don't want to pass "leave" directly because the
+    // event type string of "socket end" gets passed too.
+    client.on('disconnect', function () {
+        removeFeed();
+    });
+    client.on('leave', function () {
+        removeFeed();
+    });
+
+    client.on('create', function (name, cb) {
+        if (arguments.length == 2) {
+            cb = (typeof cb == 'function') ? cb : function () {};
+            name = name || uuid();
+        } else {
+            cb = name;
+            name = uuid();
+        }
+        // check if exists
+        if (io.sockets.clients(name).length) {
+            safeCb(cb)('taken');
+        } else {
+            join(name);
+            safeCb(cb)(null, name);
+        }
+    });
+
+    // support for logging full webrtc traces to stdout
+    // useful for large-scale error monitoring
+    client.on('trace', function (data) {
+        console.log('trace', JSON.stringify(
+            [data.type, data.session, data.prefix, data.peer, data.time, data.value]
+        ));
+    });
+
+
+    // tell client about stun and turn servers and generate nonces
+    client.emit('stunservers', config.stunservers || []);
+
+    // create shared secret nonces for TURN authentication
+    // the process is described in draft-uberti-behave-turn-rest
+    var credentials = [];
+    config.turnservers.forEach(function (server) {
+        var hmac = crypto.createHmac('sha1', server.secret);
+        // default to 86400 seconds timeout unless specified
+        var username = Math.floor(new Date().getTime() / 1000) + (server.expiry || 86400) + "";
+        hmac.update(username);
+        credentials.push({
+            username: username,
+            credential: hmac.digest('base64'),
+            url: server.url
+        });
+    });
+    client.emit('turnservers', credentials);
+
 });
+
+
+
+// *****************************
+//	Experss routes
+//	--------------
+// *****************************
+
 
 router.use(function(req, res, next) {
 	// do something on each call
@@ -154,5 +321,6 @@ app.use('/api', router);
 app.use('/', staticFiles); 
 
 // run express
-app.listen(port);
-console.log(">>>>>>>> Server running @ ", port);
+http.listen(port, function() {
+	console.log(">>>>>>>> Server running @ ", port);
+});

@@ -71,7 +71,7 @@ module.exports = function(router, passport) {
 	router.post('/forgot', function(req, res) {
 		console.log("forgot...");
 		var email = req.body.forgot; 
-		var url = guid();
+		var url = uuid();
 		console.log(email, url);
 
 		var forgot = new Forgot({
@@ -203,15 +203,5 @@ module.exports = function(router, passport) {
 			}
 		})
 	});
-
-	function guid() {
-		  function s4() {
-		    return Math.floor((1 + Math.random()) * 0x10000)
-		      .toString(16)
-		      .substring(1);
-		  }
-	  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-	    s4() + '-' + s4() + s4() + s4();
-	}
 };
 

@@ -44,9 +44,17 @@
    		 </div><!-- row -->
 	    </nav>
 
+	    <!-- Recent chats view --> 
+
 	   	<div class="container" ng-hide="hideRecents">
-	   		<h1>Recent chats</h1>
+	   		<h1>Test view</h1>
+	   		<div class="localVideo" id="localVideo"></div>
+	   		<div class="remoteVideo" id="remotesVideos"></div>
 		</div>
+
+	    <!-- End of recent chats view --> 
+
+	    <!-- Account settings  --> 
 
 	   	<div class="container" ng-hide="hideAccount">
 	   		<h1>Account settings</h1>
@@ -123,12 +131,16 @@
 
 		</div>
 
+	    <!-- End of account settings  --> 
+
 	</div>
 
 
 	    <script src="/components/jquery/dist/jquery.min.js"></script>
 	    <script src="/components/materialize/dist/js/materialize.min.js"></script>
 	    <script src="/components/angular/angular.js"></script>
+	    <script src="/socket.io/socket.io.js"></script>
+	    <script src="/components/SimpleWebRTC/latest.js"></script>
 	    <script src="/scripts/WebRTCHappy.js"></script>
 	    <script src="/scripts/controllers/mainCtrl.js"></script>
 
