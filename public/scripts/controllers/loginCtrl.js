@@ -9,14 +9,16 @@ app.controller("loginCtrl", function($scope, $http) {
 
 
 	$scope.showForgot = function() {
+		$scope.hideErrorMsg = true; 
+		$scope.hideSuccessMsg = true; 
 		$scope.hideLogin = true; 
 		$scope.hideNewUser = true;
 		$scope.hideForgotPassword = false;
 	}
 
 	$scope.showNew = function() {
-		$scope.hideErrorInRegisteration = true; 
-		$scope.hideRegisterationSuccess = true;
+		$scope.hideErrorMsg = true; 
+		$scope.hideSuccessMsg = true; 
 		
 		$scope.hideLogin = true; 
 		$scope.hideForgotPassword = true;
@@ -24,6 +26,8 @@ app.controller("loginCtrl", function($scope, $http) {
 	}
 
 	$scope.showLogin = function() {
+		$scope.hideErrorMsg = true; 
+		$scope.hideSuccessMsg = true; 
 		$scope.hideLogin = false; 
 		$scope.hideForgotPassword = true; 
 		$scope.hideNewUser = true;

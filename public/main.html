@@ -15,6 +15,7 @@
 
 		<!-- Dropdown Structure -->
 		<ul id="userdropdown" class="dropdown-content">
+		  <li><a ng-click="showRecents()" href="#">Home</a></li>
 		  <li><a ng-click="showAccount()" href="#">Account</a></li>
 		  <li class="divider"></li>
 		  <li><a href="/api/logout">Logout</a></li>
@@ -48,8 +49,22 @@
 
 	   	<div class="container" ng-hide="hideRecents">
 	   		<h1>Test view</h1>
-	   		<div class="localVideo" id="localVideo"></div>
-	   		<div class="remoteVideo" id="remotesVideos"></div>
+	   		<div class="row">
+	   			<div class="col s6">
+	   				<video class="localVideo" id="localVideo"></video>
+	   			</div>
+	   			<div class="col s6">
+	   				<video class="remoteVideo" id="remotesVideos"></video>
+				</div>
+			</div>
+			<div class="row">
+					<button ng-click="start()" id="startButton" class="btn waves-effect waves-light btn-large">Start</button>
+	
+					<button ng-click="call()" id="callButton" class="btn waves-effect waves-light btn-large">Call</button>
+
+					<button ng-click="hangup()" id="hangupButton" class="btn waves-effect waves-light btn-large">Hang Up</button>
+			</div>
+
 		</div>
 
 	    <!-- End of recent chats view --> 
@@ -123,7 +138,7 @@
 						</div>
 
 						<div class="col s6">
-							<button ng-click="showRecents()" class="btn waves-effect waves-light btn-large center">cancel <i class="mdi-navigation-close left"></i></button>
+							<button ng-click="showRecents()" class="btn waves-effect waves-light btn-large center">Back <i class="mdi-navigation-close left"></i></button>
 						</div>
 					</div>
 			   	</form>
@@ -140,8 +155,10 @@
 	    <script src="/components/materialize/dist/js/materialize.min.js"></script>
 	    <script src="/components/angular/angular.js"></script>
 	    <script src="/socket.io/socket.io.js"></script>
+	    <script src="/components/webrtc-adapter/adapter.js"></script>
 	    <script src="/scripts/WebRTCHappy.js"></script>
 	    <script src="/scripts/controllers/mainCtrl.js"></script>
+	    <script src="/scripts/happycaller.js"></script>
 
 	</body>
 </html>

@@ -1,4 +1,7 @@
-	app.controller("mainCtrl", function($scope, $http) {
+app.controller("mainCtrl", function($scope, $http) {
+
+	var happy = new Happy(); 
+	// happy.addMedia();
 
 	$scope.SERVER = SERVER_ADDRESS;
 	$scope.hideAccount = true;
@@ -27,45 +30,62 @@
 		});
 
 
-		$scope.focusSearch = function() {
-			angular.element('#search').focus()
-		};
+	$scope.start = function() {
+		happy.start();
+	}
 
-		$scope.showAccount = function() {
-			$scope.hideAccount = false;
-			$scope.hideRecents = true;
+	$scope.call = function() {
+		happy.call(); 
+	}
+
+	$scope.hangup = function() {
+		happy.hangup();
+	}
+
+	$scope.focusSearch = function() {
+		angular.element('#search').focus()
+	};
+
+	$scope.showAccount = function() {
+		$scope.hideAccount = false;
+		$scope.hideRecents = true;
+	}
+
+	$scope.showRecents = function() {
+		$scope.hideAccount = true;
+		$scope.hideRecents = false;
+
+
+		// Calling stuff, just prototyping and testing here
+
+
+	}
+
+	$scope.updateUserInfo = function(account) {
+		var data = {}; 
+		data.fname = $scope.fname;
+		data.lname = $scope.lname; 
+		data.email = $scope.email; 
+	
+		if(account.password != null && account.password.$valid) {
+			data.password = $scope.password; 
 		}
 
-		$scope.showRecents = function() {
-			$scope.hideAccount = true;
-			$scope.hideRecents = false;
-		}
-
-		$scope.updateUserInfo = function(account) {
-			var data = {}; 
-			data.fname = $scope.fname;
-			data.lname = $scope.lname; 
-			data.email = $scope.email; 
-		
-			if(account.password != null && account.password.$valid) {
-				data.password = $scope.password; 
-			}
-
-			$http.post('/api/updateuser', data). 
-				success(function(data, status, headers, config) {
-					console.log("success");
-					$scope.setSuccess("Changes were saved"); 
-				}).
-				error(function(data, status, headers, config) {
-					console.log("error"); 
-					if(data === 'email in use') {
-						$scope.setError("Email is already in use");
-					}
-					else {
-						$scope.setError("Something went wrong :(");
-					}
-				});
-		}
+		$http.post('/api/updateuser', data). 
+			success(function(data, status, headers, config) {
+				console.log("success");
+				$scope.setSuccess("Changes were saved"); 
+			}).
+			error(function(data, status, headers, config) {
+				console.log("error"); 
+				if(data === 'email in use') {
+					$scope.setError("Email is already in use");
+				}
+				else {
+					$scope.setError("Something went wrong :(");
+				}
+			});
+	}
 
 	$scope.setSuccess = function(success) {;
 		$scope.successmessage = success;

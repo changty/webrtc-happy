@@ -1,6 +1,7 @@
 // routes.js
 var User 		= require('./models/user');
 var Forgot 		= require('./models/forgot');
+var uuid			= require('node-uuid');
 
 // Simple route middleware to ensure user is authenticated.
 // function ensureAuthenticated(req, res, next) {
@@ -46,7 +47,7 @@ module.exports = function(router, passport) {
 			username: '',
 			fname: 	req.body.fname,
 			lname: req.body.lname,
-			happy_addr: ''
+			happy_addr: uuid()
 		});
 		e.setPassword(req.body.password);
 
@@ -61,6 +62,7 @@ module.exports = function(router, passport) {
 				}
 				// something else
 				else {
+					console.log("saving user error: ", err);
 					res.status(500).send("Random error");				
 				}
 			}
