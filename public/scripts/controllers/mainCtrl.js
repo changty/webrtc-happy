@@ -12,11 +12,10 @@ app.controller("mainCtrl", function($scope, $http) {
 	$scope.errormessage = ""; 
 	$scope.successmessage = "";
 
-	// init
+	// UI init
 	$(".button-collapse").sideNav();
 
-
-
+	// Get user info
 	$http.get('/api/user', {}).
 		success(function(data, status, headers, config) {
 			console.log("success", data);
@@ -31,11 +30,11 @@ app.controller("mainCtrl", function($scope, $http) {
 
 
 	$scope.start = function() {
-		happy.start();
+		happy.maybeStart();
 	}
 
 	$scope.call = function() {
-		happy.call(); 
+		happy.doCall(); 
 	}
 
 	$scope.hangup = function() {
@@ -99,4 +98,5 @@ app.controller("mainCtrl", function($scope, $http) {
 		$scope.hideSuccessMsg = true;
 		$scope.hideErrorMsg = false;
 	};
+
 });

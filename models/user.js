@@ -11,6 +11,7 @@ var UserSchema = new Schema({
 	fname: String,
 	lname: String, 
 	contacts: [String],
+	image: String,
 	happy_addr: {type: String, unique: true}
 });
 

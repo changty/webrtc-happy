@@ -1,12 +1,13 @@
 // Server.js
 
+var config          = require('./config');
 var express			= require('express');
 var app				= express();
 var http			= require('http').Server(app);
 
 var bodyParser		= require('body-parser');
 var cookieParser	= require('cookie-parser');
-var port 			= process.env.PORT || 3333;
+var port 			= process.env.PORT || config.port;
 
 // Socket.io server
 var io				= require('socket.io')(http);
@@ -23,11 +24,9 @@ var cors 			= require('cors');
 // passport startegies
 var LocalStrategy	= require('passport-local').Strategy;
 
-var config 			= require('./config');
-
 var router 			= express.Router(); 
 var staticFiles		= express.Router();
-
+    
 var mongoose		= require('mongoose'); 
 mongoose.connect(config.mongoURL);
 var User 			= require('./models/user');
@@ -136,35 +135,26 @@ function authorizeFail(data, message, error, accept) {
 // *****************************
 
 function describeRoom(name) {
-    var clients = io.sockets.clients(name);
-    var result = {
-        clients: {}
-    };
+    // var clients = io.sockets.clients(name);
+    // var result = {
+    //     clients: {}
+    // };
 
-    // Shows if client has video, audio or screen shared
-    clients.forEach(function (client) {
-        result.clients[client.id] = client.resources;
-    });
-    return result;
+    // // Shows if client has video, audio or screen shared
+    // clients.forEach(function (client) {
+    //     result.clients[client.id] = client.resources;
+    // });
+    // return result;
 }
 
 function clientsInRoom(name) {
     return io.sockets.clients(name).length;
 }
 
-function safeCb(cb) {
-    if (typeof cb === 'function') {
-        return cb;
-    } else {
-        return function () {};
-    }
-}
-
-
-
 // Start socket server 
 io.on('connection', function(client) {
-	console.log('>> IO: \t ---- Client connected');
+
+	console.log('>> IO: \t ---- Client connected ', client.id);
 
 	client.resources = {
 		screen: false,
@@ -172,16 +162,13 @@ io.on('connection', function(client) {
 		audio: false
 	};
 
+    client.emit('server started');
 
     // pass a message to another id
     client.on('message', function (details) {
         if (!details) return;
 
-        var otherClient = io.sockets.sockets[details.to];
-        if (!otherClient) return;
-
-        details.from = client.id;
-        otherClient.emit('message', details);
+        client.to(details.room).emit('message', details);
     });
 
     client.on('shareScreen', function () {
@@ -193,7 +180,7 @@ io.on('connection', function(client) {
         removeFeed('screen');
     });
 
-    client.on('join', join);
+    client.on('create or join', join);
 
     function removeFeed(type) {
         if (client.room) {
@@ -208,20 +195,28 @@ io.on('connection', function(client) {
         }
     }
 
-    function join(name, cb) {
+    function join(room) {
+        console.log('>> IO: \t Joining room: ', room);
         // sanity check
-        if (typeof name !== 'string') return;
+        if (typeof room !== 'string') return;
         // check if maximum number of clients reached
         if (config.rooms && config.rooms.maxClients > 0 && 
-          clientsInRoom(name) >= config.rooms.maxClients) {
-            safeCb(cb)('full');
+          clientsInRoom(room) >= config.rooms.maxClients) {
+            client.emit('full');
             return;
         }
         // leave any existing rooms
-        removeFeed();
-        safeCb(cb)(null, describeRoom(name));
-        client.join(name);
-        client.room = name;
+        // removeFeed();
+        client.emit('describe room', describeRoom(room));
+        client.join(room);
+        client.room = room;
+
+        if(clientsInRoom == 1) {
+            client.to(room).emit('created', room);
+        }
+        client.to(room).emit('joined', {room: room, fname: '', lname: '', email: '', image: '', happy_addr: ''});
+        client.emit('joined', {room: room, fname: '', lname: '', email: '', image: '', happy_addr: ''});
+        console.log(">> IO: \t", "Client joined a room", client.room);
     }
 
     // we don't want to pass "leave" directly because the
@@ -233,22 +228,6 @@ io.on('connection', function(client) {
         removeFeed();
     });
 
-    client.on('create', function (name, cb) {
-        if (arguments.length == 2) {
-            cb = (typeof cb == 'function') ? cb : function () {};
-            name = name || uuid();
-        } else {
-            cb = name;
-            name = uuid();
-        }
-        // check if exists
-        if (io.sockets.clients(name).length) {
-            safeCb(cb)('taken');
-        } else {
-            join(name);
-            safeCb(cb)(null, name);
-        }
-    });
 
     // support for logging full webrtc traces to stdout
     // useful for large-scale error monitoring
