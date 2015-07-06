@@ -29,12 +29,16 @@ app.controller("mainCtrl", function($scope, $http) {
 		});
 
 
-	$scope.start = function() {
-		happy.maybeStart();
-	}
+	// $scope.start = function() {
+	// 	happy.maybeStart();
+	// }
 
 	$scope.call = function() {
 		happy.doCall(); 
+	}
+
+	$scope.answer = function() {
+		happy.doAnswer();
 	}
 
 	$scope.hangup = function() {

@@ -147,8 +147,9 @@ function describeRoom(name) {
     // return result;
 }
 
-function clientsInRoom(name) {
-    return io.sockets.clients(name).length;
+function clientsInRoom(room) {
+    var clients = io.sockets.adapter.rooms[room]; 
+    return Object.keys(clients).length;
 }
 
 // Start socket server 
@@ -167,7 +168,8 @@ io.on('connection', function(client) {
     // pass a message to another id
     client.on('message', function (details) {
         if (!details) return;
-
+        console.log('>> IO: \t Sending message to: ', details.room);
+        console.log('>> IO: \t\t Type of message: ', details.type);
         client.to(details.room).emit('message', details);
     });
 
@@ -211,8 +213,8 @@ io.on('connection', function(client) {
         client.join(room);
         client.room = room;
 
-        if(clientsInRoom == 1) {
-            client.to(room).emit('created', room);
+        if(clientsInRoom(room) == 1) {
+            client.emit('created', room);
         }
         client.to(room).emit('joined', {room: room, fname: '', lname: '', email: '', image: '', happy_addr: ''});
         client.emit('joined', {room: room, fname: '', lname: '', email: '', image: '', happy_addr: ''});
