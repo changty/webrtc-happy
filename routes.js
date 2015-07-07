@@ -163,7 +163,40 @@ module.exports = function(router, passport) {
 
 
 	router.get('/user', function(req, res) {
-		res.json( {fname: req.user.fname, lname: req.user.lname, email: req.user.email, contacts: req.user.contacts, username: req.user.username, happy_addr: req.user.happy_addr});
+
+		var usr = User.findOne({email: req.user.email}, function(err, user) {
+			if(err) {
+				console.log(">> ERROR: \t Unable to fetch user"); 
+				res.status(500).send("Error"); 
+			}
+			if(!user) {
+				console.log(">> ERROR: \t Can not find user");
+				res.status(500).send("Error");
+			}
+			else {
+				user.getContacts(function(err, results) {
+					if(err) {
+						console.log(">> ERROR: \t Unable to fetch user's contacts"); 
+						res.status(500).send("Error"); 
+					}
+
+					res.json( {
+						fname: req.user.fname, 
+						lname: req.user.lname, 
+						email: req.user.email, 
+						contacts: results, 
+						username: req.user.username, 
+						notifications: req.user.notifications, 
+						happy_addr: req.user.happy_addr
+					});
+
+				});
+			}
+
+		});
+
+
+		// res.json( {fname: req.user.fname, lname: req.user.lname, email: req.user.email, contacts: req.user.contacts, username: req.user.username, happy_addr: req.user.happy_addr});
 	}); 
 
 	router.post('/updateuser', function(req, res) {

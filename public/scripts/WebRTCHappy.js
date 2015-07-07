@@ -5,3 +5,13 @@ app.filter("sanitize", ['$sce', function($sce) {
     return $sce.trustAsHtml(htmlCode);
   }
 }]);
+
+app.directive('contactsLoopDirective', function() {
+	return function(scope, element, attrs) {
+		if(scope.$last) {
+			$('.collapsible').collapsible({
+      			accordion : false // A setting that changes the collapsible behavior to expandable instead of the default accordion style
+    		});	
+		}
+	}
+});

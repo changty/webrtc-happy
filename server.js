@@ -155,7 +155,10 @@ function clientsInRoom(room) {
 // Start socket server 
 io.on('connection', function(client) {
 
-	console.log('>> IO: \t ---- Client connected ', client.id);
+	console.log('>> IO: \t ---- Client connected ', client.request.user.happy_addr);
+
+    // Add user to his/her own room: 
+    client.join(client.request.user.happy_addr);
 
 	client.resources = {
 		screen: false,
@@ -168,9 +171,9 @@ io.on('connection', function(client) {
     // pass a message to another id
     client.on('message', function (details) {
         if (!details) return;
-        console.log('>> IO: \t Sending message to: ', details.room);
+        console.log('>> IO: \t Sending message to: ', details.to, ' from: ', details.from);
         console.log('>> IO: \t\t Type of message: ', details.type);
-        client.to(details.room).emit('message', details);
+        client.to(details.to).emit('message', details);
     });
 
     client.on('shareScreen', function () {
@@ -209,13 +212,13 @@ io.on('connection', function(client) {
         }
         // leave any existing rooms
         // removeFeed();
-        client.emit('describe room', describeRoom(room));
+        // client.emit('describe room', describeRoom(room));
         client.join(room);
         client.room = room;
 
-        if(clientsInRoom(room) == 1) {
-            client.emit('created', room);
-        }
+        // if(clientsInRoom(room) == 1) {
+        //     client.emit('created', room);
+        // }
         client.to(room).emit('joined', {room: room, fname: '', lname: '', email: '', image: '', happy_addr: ''});
         client.emit('joined', {room: room, fname: '', lname: '', email: '', image: '', happy_addr: ''});
         console.log(">> IO: \t", "Client joined a room", client.room);

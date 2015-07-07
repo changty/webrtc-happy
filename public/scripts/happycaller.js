@@ -4,7 +4,8 @@ Happy = function(options) {
 	this.options = {
 		server: 'http://192.168.0.16:3333',
 		localVideo: $('.localVideo')[0],
-		remoteVideo: $('.remoteVideo')[0]
+		remoteVideo: $('.remoteVideo')[0],
+		myAddress: "my-default-room" 
 	}
 
 	$.extend(this.options, options);
@@ -50,7 +51,7 @@ Happy = function(options) {
 	};
 
 	// for testing purposes only, room handling needs to be done in a different manner
-	this.room = "my testing room";
+	this.myHappyAddress = this.options.defaultRoom;
 
 	// connect to socket server
 	this.socket = io();
@@ -58,12 +59,12 @@ Happy = function(options) {
 	// make sure we are connected, before doing anything else
 	this.socket.on('server started', function() {
 		self.trace('Socket server is ready');
-		self.socket.emit('create or join', self.room);
+		// self.socket.emit('create or join', self.room);
 	});
 
 	// handle refershing the page
 	window.onbeforeunload = function(e){
-		self.sendMessage({type: 'bye', room: self.room});
+		self.sendMessage({type: 'bye'});
 	}
 
 	// socket io responses
@@ -92,12 +93,15 @@ Happy = function(options) {
 		else if (message.type === 'offer') {
 			// self.isChannelReady = true;
 			self.trace('Offer ', message);
+			self.forwardTo = message.from;
 
 			if(!self.isInitiator && !self.isStarted) {
 				self.maybeStart(); 
 				self.pc.setRemoteDescription(new RTCSessionDescription(message.data));
 			}
-			self.doAnswer();
+
+			self.ring();
+			// self.doAnswer(message.from);
 		}
 
 		else if (message.type === 'answer' && self.isStarted) {
@@ -141,6 +145,8 @@ Happy.prototype.prepareCall = function() {
 Happy.prototype.sendMessage = function(message) {
 	var self = this; 
 
+	message.from = self.myHappyAddress;
+	message.to = self.forwardTo; 
 	self.trace('Client sending a message: ', message); 
 	self.socket.emit('message', message);
 }
@@ -219,7 +225,6 @@ Happy.prototype.handleIceCandidate = function(event) {
 
 	if(event.candidate) {
 		self.sendMessage({
-			room: self.room,
 			type: 'candidate',
 			label: event.candidate.sdpMLineIndex,
 			id: event.candidate.sdpMid,
@@ -237,13 +242,16 @@ Happy.prototype.handleCreateOfferError = function(event) {
 	self.trace('createOffer() error: ', e);
 }
 
-Happy.prototype.doCall = function() {
+Happy.prototype.doCall = function(to) {
 	var self = this; 
 
 	if(!self.pc) {
 		self.maybeStart();
 	}
-	self.trace('Creating offer to peer'); 
+
+	self.forwardTo = to; 
+
+	self.trace('Creating offer to peer ', to); 
 	self.pc.createOffer(self.setLocalAndSendMessage.bind(self), self.handleCreateOfferError.bind(self));
 }
 
@@ -253,6 +261,15 @@ Happy.prototype.doAnswer = function() {
 	if(!self.pc) {
 		return;
 	}
+
+	// forwardTo is already set in "offer"
+
+  	$('.remoteVideo').removeClass('hidden');
+  	$('.localVideo').removeClass('hidden');
+  	$('#hang-up-during-call').removeClass('hidden');
+  	$('#ringing').closeModal();
+
+
 	self.trace('Sending answer to peer'); 
 	self.pc.createAnswer(self.setLocalAndSendMessage.bind(self), null, self.sdpConstraints);
 }
@@ -266,7 +283,8 @@ Happy.prototype.setLocalAndSendMessage = function(sessionDescription) {
 	self.pc.setLocalDescription(sessionDescription); 
 
 	self.trace('setLocalAndSendMessage sending message ', sessionDescription); 
-	self.sendMessage({type: sessionDescription.type, room: self.room, data: sessionDescription});
+	self.sendMessage({type: sessionDescription.type, data: sessionDescription});
+
 	// self.sendMessage({room: self.room, type: 'offer', data: sessionDescription});
 } 
 
@@ -320,6 +338,11 @@ Happy.prototype.handleRemoteStreamRemoved = function(event) {
 
 Happy.prototype.hangup = function() {
 	var self = this; 
+  	$('#ringing').closeModal();
+  	$('.remoteVideo').addClass('hidden');
+  	$('.localVideo').addClass('hidden');
+  	$('#hang-up-during-call').addClass('hidden');
+
 
 	self.trace('Hanging up'); 
 	self.stop(); 
@@ -340,6 +363,14 @@ Happy.prototype.stop = function() {
 		self.pc = null; 
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+Happy.prototype.ring = function() {
+	var self = this; 
+  	$('#ringing').openModal();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -430,128 +461,8 @@ Happy.prototype.removeCN = function(sdpLines, mLineIndex) {
 	return sdpLines;
 }
 
-// Happy.prototype.addMedia = function(opts) {
-// 	var self = this;
-// 	var options = {
-// 		video: true,
-// 		audio: true
-// 	};
 
-// 	$.extend(options, opts); 
-
-// 	navigator.getUserMedia = navigator.getUserMedia ||
-// 		navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-// 	var constraints = {video: options.video, audio: options.audio};
-
-// 	function successCallback(localMediaStream) {
-// 		self.trace("Received local stream"); 
-// 		self.localVideo.src = URL.createObjectURL(localMediaStream); 
-// 		self.localVideo.play();
-// 		self.localStream = localMediaStream; 
-// 	}
-
-
-// 	function errorCallback(error){
-// 		self.trace("navigator.getUserMedia error: ", error);
-// 	}
-
-// 	navigator.getUserMedia(constraints, successCallback, errorCallback);
-
-// }
 
 Happy.prototype.trace = function(text, obj) {
 	console.log((performance.now() / 1000).toFixed(3) + ": " + text, obj);
 }
-
-
-// Happy.prototype.start = function() {
-// 	var self = this;
-
-// 	self.trace("Requesting local stream"); 
-// 	self.addMedia();
-// }
-
-// Happy.prototype.call = function() {
-// 	var self = this;
-
-// 	self.trace("Starting call");
-
-// 	console.log(self.localStream);
-
-// 	if(self.localStream.getVideoTracks().length > 0) {
-// 		self.trace('Using video device: ', self.localStream.getVideoTracks()[0].label);
-// 	}
-// 	if(self.localStream.getAudioTracks().length > 0) {
-// 		self.trace('Using audio device: ', self.localStream.getAudioTracks()[0].label);
-// 	}
-
-// 	var servers = null; 
-// 	self.localPeerConnection = new RTCPeerConnection(servers);
-// 	self.trace('Created local peer connection object localPeerconnection');
-// 	self.localPeerConnection.onicecadidate = self.gotLocalIceCandidate.bind(self);
-
-// 	self.remotePeerConnection = new RTCPeerConnection(servers);
-// 	self.trace("Created remote peer connection object remotePeerConnection");
-// 	self.remotePeerConnection.onicecandidate = self.gotRemoteIceCandidate.bind(self);
-// 	self.remotePeerConnection.onaddstream = self.gotRemoteStream.bind(self);
-
-
-// 	self.localPeerConnection.addStream(self.localStream);
-// 	self.trace("Added localStream to localPeerConnection");
-// 	self.localPeerConnection.createOffer(self.gotLocalDescription.bind(self), self.handleError.bind(self));
-// }
-
-// Happy.prototype.hangup = function() {
-// 	var self = this; 
-
-// 	self.trace('Ending call...');
-// 	self.localPeerConnection.close();
-// 	self.remotePeerConnection.close();
-// 	self.localPeerConnection = null;
-// 	self.remotePeerConnection = null;
-// }
-
-// Happy.prototype.gotLocalDescription = function(description) {
-// 	var self = this;
-
-// 	self.localPeerConnection.setLocalDescription(description);
-// 	self.trace("Offer from localPeerConnection: \n", description.sdp);
-// 	self.remotePeerConnection.setRemoteDescription(description);
-// 	self.remotePeerConnection.createAnswer(self.gotRemoteDescription.bind(self),self.handleError.bind(self));
-// }
-
-// Happy.prototype.gotRemoteDescription = function(description) {
-// 	var self = this;
-
-// 	self.remotePeerConnection.setLocalDescription(description);
-// 	self.trace("Answer from remotePeerConnection: \n", description.sdp);
-// 	self.localPeerConnection.setRemoteDescription(description);
-// }
-
-// Happy.prototype.gotRemoteStream = function(event) {
-// 	var self = this;
-// 	self.remoteVideo.src = URL.createObjectURL(event.stream);
-// 	self.trace("Received remote stream");
-// }
-
-
-// Happy.prototype.gotLocalIceCandidate = function(event) {
-// 	var self = this;
-
-// 	if (event.candidate) {
-// 		self.remotePeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate));
-// 		self.trace("Local ICE candidate: \n", event.candidate.candidate);
-// 	}
-// }
-
-// Happy.prototype.gotRemoteIceCandidate = function(event){
-//	 var self = this;
-
-// 	if (event.candidate) {
-// 		self.localPeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate));
-// 		self.trace("Remote ICE candidate: \n ", event.candidate.candidate);
-// 	}
-// }
-
-// Happy.prototype.handleError = function(){}

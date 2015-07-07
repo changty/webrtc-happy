@@ -12,6 +12,7 @@ var UserSchema = new Schema({
 	lname: String, 
 	contacts: [String],
 	image: String,
+	notifications: [ {from: String, type: String, message: String } ],
 	happy_addr: {type: String, unique: true}
 });
 
@@ -34,11 +35,28 @@ UserSchema.methods.getPassword = function(password) {
 	return bcrypt.hashSync(pw, salt); 
 }
 
-UserSchema.methods.getContacts = function() {
+UserSchema.methods.getContacts = function(next) {
 	var self = this; 
 
-	mongoose.models["User"].find({});
+	mongoose.models["User"].find({email: { "$in" : this.contacts}}, function(err, results) {
+		if(err) {
+			next(err); 
+		}
+		else if(results) {
+			// hide password from contacts
+			for (var i=0; i<results.length; i++) {
+				results[i].password = ""; 
+				results[i].notifications = null;
+			}
+
+			next(err, results); 
+		}
+		else {
+			next();
+		}
+	});
 }
+
 
 UserSchema.pre("save", function(next, done) {
    var self = this;

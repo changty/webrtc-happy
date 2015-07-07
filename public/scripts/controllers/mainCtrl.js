@@ -1,8 +1,5 @@
 app.controller("mainCtrl", function($scope, $http) {
 
-	var happy = new Happy(); 
-	// happy.addMedia();
-
 	$scope.SERVER = SERVER_ADDRESS;
 	$scope.hideAccount = true;
 	$scope.hideRecents = false;
@@ -22,6 +19,11 @@ app.controller("mainCtrl", function($scope, $http) {
 			$scope.fname = data.fname;
 			$scope.lname = data.lname;
 			$scope.email = data.email; 
+			$scope.happy_addr = data.happy_addr;
+			$scope.contacts = data.contacts;
+
+			// initialize happy
+			$scope.happy = new Happy({defaultRoom: $scope.happy_addr}); 
 		}).
 
 		error(function(data, status, headers, config) {
@@ -33,16 +35,16 @@ app.controller("mainCtrl", function($scope, $http) {
 	// 	happy.maybeStart();
 	// }
 
-	$scope.call = function() {
-		happy.doCall(); 
+	$scope.call = function(email) {
+		$scope.happy.doCall(getHappyAddrByEmail(email)); 
 	}
 
 	$scope.answer = function() {
-		happy.doAnswer();
+		$scope.happy.doAnswer();
 	}
 
 	$scope.hangup = function() {
-		happy.hangup();
+		$scope.happy.hangup();
 	}
 
 	$scope.focusSearch = function() {
@@ -103,4 +105,12 @@ app.controller("mainCtrl", function($scope, $http) {
 		$scope.hideErrorMsg = false;
 	};
 
+
+	function getHappyAddrByEmail(email) {
+		for(var i=0; i<$scope.contacts.length; i++) {
+			if($scope.contacts[i].email === email) {
+				return $scope.contacts[i].happy_addr; 
+			}
+		}
+	}
 });

@@ -4,14 +4,22 @@
 	<title>WebRTC Happy example</title>
 
     <link type="text/css" rel="stylesheet" href="/components/materialize/dist/css/materialize.min.css"  media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
 
 	<link rel="stylesheet" type="text/css" href="/stylesheets/style.css"/>
 </head>
     <body class="" ng-app="WebRTCHappy">
-
+	
     <div ng-controller="mainCtrl">
+
+		<video class="localVideo hidden" id="localVideo"></video>
+		<video class="remoteVideo hidden" id="remoteVideos"></video>
+		<!-- button to hangup during the call -->
+	    <a id="hang-up-during-call" class="hidden center btn-ring btn-floating btn-large waves-effect waves-light red" ng-click="hangup()"><i class="material-icons">call_end</i></a>
+
 
 		<!-- Dropdown Structure -->
 		<ul id="userdropdown" class="dropdown-content">
@@ -21,7 +29,7 @@
 		  <li><a href="/api/logout">Logout</a></li>
 		</ul>
 
-	    <nav class="happy-dark">
+	    <nav class="">
 	    	<div class="row">
 				<div id="slide-out" class="side-nav">
 
@@ -38,7 +46,7 @@
 
 		  		<a ng-click="focusSearch()" href="#" data-activates="slide-out" class="button-collapse show-on-large col s1"><i class="mdi-content-add"></i></a>
 
-				<ul class="right hide-on-med-and-down">
+				<ul class="right ">
 			      <!-- Dropdown Trigger -->
 			      <li><a class="dropdown-button" href="#" data-activates="userdropdown">{{fname}} {{lname}}<i class="mdi-navigation-arrow-drop-down right"></i></a></li>
 				</ul>
@@ -48,24 +56,30 @@
 	    <!-- Recent chats view --> 
 
 	   	<div class="container" ng-hide="hideRecents">
-	   		<h1>Test view</h1>
-	   		<div class="row">
-	   			<div class="col s6">
-	   				<video class="localVideo" id="localVideo"></video>
-	   			</div>
-	   			<div class="col s6">
-	   				<video class="remoteVideo" id="remotesVideos"></video>
-				</div>
-			</div>
-			<div class="row">
-<!-- 					<button ng-click="start()" id="startButton" class="btn waves-effect waves-light btn-large">Start</button> -->
-	
-					<button ng-click="call()" id="callButton" class="btn waves-effect waves-light btn-large">Call</button>
 
-					<button ng-click="answer()" id="answerButton" class="btn waves-effect waves-light btn-large">Answer</button>
+	   		<!-- List of contacts -->
+	   		 <ul class="collapsible popout contacts" data-collapsible="accordion">
+	   		 	<li ng-repeat="contact in contacts" contacts-loop-directive>
+					
+					<div class="collapsible-header"><i class="large material-icons">perm_identity</i>{{fname}} {{lname}}</div>
+					<div class="collapsible-body">
+						<p>{{email}}</p>
 
-					<button ng-click="hangup()" id="hangupButton" class="btn waves-effect waves-light btn-large">Hang Up</button>
-			</div>
+						<div class="grey lighten-4 footer-copyright">
+							<div class="container">
+								<a class="waves-effect waves-teal btn-flat" ng-click="call(contact.email)"><i class="material-icons">phone</i> Call</a>
+							</div>
+						</div>
+
+					</div>
+				</li>
+	   		 	<li>
+					<div class="collapsible-header"><i class="mdi-maps-place"></i>Dummy</div>
+					<div class="collapsible-body"><p>email</p></div>
+				</li>
+
+
+	   		 </ul><!-- end of contacts -->
 
 		</div>
 
@@ -150,7 +164,20 @@
 
 	    <!-- End of account settings  --> 
 
-	</div>
+
+		<div id="ringing" class="modal">
+				<div class="modal-content">
+					<h4>Incoming call</h4>
+					<p>from...</p>
+				</div>
+				<div class="modal-footer">
+		    		<a class="btn waves-effect waves-light green" ng-click="answer()"><i class="material-icons">call</i></a>
+						
+					<a class="btn waves-effect waves-light red" ng-click="hangup()"><i class="material-icons">call_end</i></a>
+				</div>
+			</div>
+
+		</div>
 
 
 	    <script src="/components/jquery/dist/jquery.min.js"></script>
