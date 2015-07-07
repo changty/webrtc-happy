@@ -133,7 +133,7 @@ Happy = function(options) {
 Happy.prototype.prepareCall = function() {
 	var self = this; 
 
-	var constraints = {video: true}; 
+	var constraints = {video: true, audio:true}; 
 	getUserMedia(constraints, self.handleUserMedia.bind(self), self.handleUserMediaError.bind(self));
 
 	if (location.hostname != "localhost") {
@@ -156,8 +156,11 @@ Happy.prototype.handleUserMedia = function(stream) {
 
 	self.trace('Adding local stream'); 
 	self.localVideo.src = window.URL.createObjectURL(stream); 
-	self.localVideo.play();
 	self.localStream = stream; 
+
+	self.localVideo.addEventListener('canplay', function() {
+		self.localVideo.play();
+	});
 	
 	self.sendMessage({type: 'got user media'}); 
 	if(self.isInitiator) {
@@ -277,7 +280,7 @@ Happy.prototype.doAnswer = function() {
 Happy.prototype.setLocalAndSendMessage = function(sessionDescription) {
 	var self = this; 
 
-//	sessionDescription.sdp = self.preferOpus(sessionDescription.sdp);
+	// sessionDescription.sdp = self.preferOpus(sessionDescription.sdp);
 	// sessionDescription.sdp = (sessionDescription.sdp);
 
 	self.pc.setLocalDescription(sessionDescription); 
@@ -327,8 +330,11 @@ Happy.prototype.handleRemoteStreamAdded = function(event) {
 
 	self.trace('Remote stream added', event.stream);
 	self.remoteVideo.src = window.URL.createObjectURL(event.stream); 
-	self.remoteVideo.play();
 	self.remoteStream = event.stream; 
+
+	self.remoteVideo.addEventListener('canplay', function() {
+		self.remoteVideo.play();
+	});
 }
 
 Happy.prototype.handleRemoteStreamRemoved = function(event) {
@@ -342,7 +348,8 @@ Happy.prototype.hangup = function() {
   	$('.remoteVideo').addClass('hidden');
   	$('.localVideo').addClass('hidden');
   	$('#hang-up-during-call').addClass('hidden');
-
+  	self.remoteVideo.stop(); 
+  	self.localVideo.stop();
 
 	self.trace('Hanging up'); 
 	self.stop(); 
@@ -373,92 +380,81 @@ Happy.prototype.ring = function() {
 
 
 ///////////////////////////////////////////////////////////////////////////
-
-// Set Opus as the default audio codec, if it's available
+// Set Opus as the default audio codec if it's present.
 Happy.prototype.preferOpus = function(sdp) {
-	var self = this; 
+	var self = this;
+  var sdpLines = sdp.split('\r\n');
+  var mLineIndex;
+  // Search for m line.
+  for (var i = 0; i < sdpLines.length; i++) {
+      if (sdpLines[i].search('m=audio') !== -1) {
+        mLineIndex = i;
+        break;
+      }
+  }
+  if (mLineIndex === null) {
+    return sdp;
+  }
 
-	var sdpLines = sdp.split('\r\n');
-	var mLineIndex; 
+  // If Opus is available, set it as the default in m line.
+  for (i = 0; i < sdpLines.length; i++) {
+    if (sdpLines[i].search('opus/48000') !== -1) {
+      var opusPayload = self.extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
+      if (opusPayload) {
+        sdpLines[mLineIndex] = self.setDefaultCodec(sdpLines[mLineIndex], opusPayload);
+      }
+      break;
+    }
+  }
 
-	// Searc for m line. 
-	for (var i=0; i < sdpLines.length; i++) {
-		if(sdpLines[i].search('m=audio') !== -1) {
-			mLineIndex = i; 
-			break; 
-		}
-	}
+  // Remove CN in m line and sdp.
+  sdpLines = self.removeCN(sdpLines, mLineIndex);
 
-	if(mLineIndex === null) {
-		return sdp;
-	}
-
-	// if Opus is available, set it as the default in m line 
-	for (var i=0; i<sdpLines.length; i++) {
-		if(sdpLines[i].search('opus/48000') !== -1) {
-			var opusPayload = self.extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
-			if(opusPayload) {
-				sdpLines[mLineIndex] = self.setDefaultCodec(sdpLines[mLineIndex], opusPayload);
-			}
-			break;
-		}
-	}
-
-	// Remove CN in m line and sdp
-	sdpLines = self.removeCN(sdpLines, mLineIndex); 
-	sdp = sdpLines.join('\r\n'); 
-	return sdp;
+  sdp = sdpLines.join('\r\n');
+  return sdp;
 }
 
 Happy.prototype.extractSdp = function(sdpLine, pattern) {
-	var self = this; 
-
-	var result = sdpLine.match(pattern); 
-	return result && result.length === 2 ? result[1] : null; 
+  var result = sdpLine.match(pattern);
+  return result && result.length === 2 ? result[1] : null;
 }
 
-// Set the selected codec to the first in m line 
+// Set the selected codec to the first in m line.
 Happy.prototype.setDefaultCodec = function(mLine, payload) {
-	var self = this; 
-
-	var elements = mLine.split(' '); 
-	var newLine = []; 
-	var index = 0; 
-
-	for(var i=0 ;i<elements.length; i++) {
-		if(index === 3) { // Format of media starts from the fourth
-			newLine[index++] = payload; 
-		}
-		if(elements[i] !== payload) {
-			newLine[index++] = elements[i];
-		}
-	}
-
-	return newLine.join(' ');
+	var self = this;
+  var elements = mLine.split(' ');
+  var newLine = [];
+  var index = 0;
+  for (var i = 0; i < elements.length; i++) {
+    if (index === 3) { // Format of media starts from the fourth.
+      newLine[index++] = payload; // Put target payload to the first.
+    }
+    if (elements[i] !== payload) {
+      newLine[index++] = elements[i];
+    }
+  }
+  return newLine.join(' ');
 }
- 
-// Strip CN from sdp before CN constraints is ready
+
+// Strip CN from sdp before CN constraints is ready.
 Happy.prototype.removeCN = function(sdpLines, mLineIndex) {
-	var self = this; 
+  var mLineElements = sdpLines[mLineIndex].split(' ');
+  // Scan from end for the convenience of removing an item.
+  for (var i = sdpLines.length-1; i >= 0; i--) {
+    var payload = self.extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i);
+    if (payload) {
+      var cnPos = mLineElements.indexOf(payload);
+      if (cnPos !== -1) {
+        // Remove CN payload from m line.
+        mLineElements.splice(cnPos, 1);
+      }
+      // Remove CN line in sdp
+      sdpLines.splice(i, 1);
+    }
+  }
 
-	var mLineElements = sdpLines[mLineIndex].split(' ');
-	//Scan from the end for the convenience of removing an item
-	for(var i=sdpLines.length-1; i>=0; i--) {
-		var payload = self.extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i); 
-		if(payload) {
-			var cnPos = mLineElements.indexOf(payload); 
-			if(cnPos !== -1) {
-				//Remove CN payload from the m line.
-				mLineElements.splice(cnPos, 1); 
-			}
-			
-			//Remove CN line in sdp
-			sdpLines.splice(i, 1); 
-		}
-	}
-
-	sdpLines[mLineIndex] = mLineElements.join(' ');
-	return sdpLines;
+  sdpLines[mLineIndex] = mLineElements.join(' ');
+  return sdpLines;
 }
 
 

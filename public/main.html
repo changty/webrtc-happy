@@ -61,9 +61,9 @@
 	   		 <ul class="collapsible popout contacts" data-collapsible="accordion">
 	   		 	<li ng-repeat="contact in contacts" contacts-loop-directive>
 					
-					<div class="collapsible-header"><i class="large material-icons">perm_identity</i>{{fname}} {{lname}}</div>
+					<div class="collapsible-header"><i class="large material-icons">perm_identity</i>{{contact.fname}} {{contact.lname}}</div>
 					<div class="collapsible-body">
-						<p>{{email}}</p>
+						<p>{{contact.email}}</p>
 
 						<div class="grey lighten-4 footer-copyright">
 							<div class="container">
