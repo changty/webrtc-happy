@@ -11,7 +11,13 @@
 	line-height: 20vmin;
 }
 
-.center {
+.happy-nav {
+	text-align:center;
+	font-family: Sacramento; 
+	font-size: 5vmin;
+}
+
+.center-element {
 	position:relative;
 	margin-left: 50% !important;
 	transform: translateX(-50%) !important;

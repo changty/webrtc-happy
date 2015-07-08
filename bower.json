@@ -21,6 +21,7 @@
     "angular": "~1.4.1",
     "materialize": "~0.96.1",
     "jquery": "~2.1.4",
-    "webrtc-adapter": "~0.1.4"
+    "webrtc-adapter": "~0.1.4",
+    "emojione": "~1.4.1"
   }
 }

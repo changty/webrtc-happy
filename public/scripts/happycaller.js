@@ -17,7 +17,6 @@ Happy = function(options) {
 	this.remoteStream;
 
 	// this.isChannelReady = false; 
-	this.isInitiator = false; 
 	this.isStarted = false;
 	this.turnReady; 
 
@@ -70,7 +69,6 @@ Happy = function(options) {
 	// socket io responses
 	this.socket.on('created', function (room){
 		self.trace('Created room ' + room);
-		self.isInitiator = true;
 	});
 
 	this.socket.on('full', function (room){
@@ -95,7 +93,7 @@ Happy = function(options) {
 			self.trace('Offer ', message);
 			self.forwardTo = message.from;
 
-			if(!self.isInitiator && !self.isStarted) {
+			if(!self.isStarted) {
 				self.maybeStart(); 
 				self.pc.setRemoteDescription(new RTCSessionDescription(message.data));
 			}
@@ -122,20 +120,33 @@ Happy = function(options) {
 			self.trace('Bye...', message);
 			self.handleRemoteHangup();
 		}
+		else if(message.type === 'hangup' && self.isStarted) {
+			self.handleRemoteHangup();
+		}
 		else {
 			self.trace(' >>>> Other message: ', message);
 		}
 	});
 
-	self.prepareCall();
+	self.init();
 }
 
-Happy.prototype.prepareCall = function() {
+Happy.prototype.init = function() {
 	var self = this; 
+
 
 	var constraints = {video: true, audio:true}; 
 	getUserMedia(constraints, self.handleUserMedia.bind(self), self.handleUserMediaError.bind(self));
 
+	// var constraints = {video: true, audio:true}; 
+	// getUserMedia(constraints, 
+	// 	function(stream) {
+	// 		self.trace('Asking permission');
+	// 		self.localStream = stream;
+	// 	}, 
+	// 	function(err){self.trace('Error: ', err);}
+	// 	);
+	
 	if (location.hostname != "localhost") {
 		self.requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
 	}
@@ -154,18 +165,26 @@ Happy.prototype.sendMessage = function(message) {
 Happy.prototype.handleUserMedia = function(stream) {
 	var self = this; 
 
-	self.trace('Adding local stream'); 
-	self.localVideo.src = window.URL.createObjectURL(stream); 
-	self.localStream = stream; 
-
+	self.localStream = stream;
+	self.localVideo.src = window.URL.createObjectURL(self.localStream); 
 	self.localVideo.addEventListener('canplay', function() {
 		self.localVideo.play();
 	});
 	
 	self.sendMessage({type: 'got user media'}); 
-	if(self.isInitiator) {
+	if(!self.isStarted) {
 		self.maybeStart();
 	}
+
+}
+
+Happy.prototype.playUserMedia = function() {
+	var self = this;
+
+	self.trace('Starting video and audio stream');
+
+	self.trace('Showing local stream'); 
+	// self.localStream = stream; 
 }
 
 Happy.prototype.handleUserMediaError = function(error) {
@@ -174,16 +193,6 @@ Happy.prototype.handleUserMediaError = function(error) {
 	self.trace('getUserMedia error: ', error);
 }
 
-
-// This is still missing...
-// var constraints = {video: true};
-// getUserMedia(constraints, handleUserMedia, handleUserMediaError);
-
-// console.log('Getting user media with constraints', constraints);
-
-// if (location.hostname != "localhost") {
-//	 requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
-// }
 
 Happy.prototype.maybeStart = function() {
 	var self = this; 
@@ -200,7 +209,7 @@ Happy.prototype.maybeStart = function() {
 		self.trace('OK, lets go');
 	}
 	else {
-		self.trace('Something is missing...', !self.isStartd + " " + self.localStream + " " + self.isChannelReady);
+		self.trace('Something is missing...', !self.isStarted + " " + self.localStream + " " + self.isChannelReady);
 	}
 }
 
@@ -247,6 +256,8 @@ Happy.prototype.handleCreateOfferError = function(event) {
 
 Happy.prototype.doCall = function(to) {
 	var self = this; 
+
+	self.playUserMedia();
 
 	if(!self.pc) {
 		self.maybeStart();
@@ -344,12 +355,22 @@ Happy.prototype.handleRemoteStreamRemoved = function(event) {
 
 Happy.prototype.hangup = function() {
 	var self = this; 
+
   	$('#ringing').closeModal();
   	$('.remoteVideo').addClass('hidden');
   	$('.localVideo').addClass('hidden');
   	$('#hang-up-during-call').addClass('hidden');
-  	self.remoteVideo.stop(); 
-  	self.localVideo.stop();
+
+  	if(self.localVideo) {
+	  	self.localVideo.pause();
+	  	self.localVideo.src = null;
+  	}
+  	if(self.remoteVideo) {
+	  	self.remoteVideo.pause();
+	  	self.remoteVideo.src = null; 
+  	}
+
+  	// self.localStream = null;
 
 	self.trace('Hanging up'); 
 	self.stop(); 
@@ -359,6 +380,7 @@ Happy.prototype.hangup = function() {
 Happy.prototype.handleRemoteHangup = function() {
 	var self = this; 
 	self.trace('Remote hangup');
+	self.hangup();
 }
 
 Happy.prototype.stop = function() {
@@ -369,6 +391,9 @@ Happy.prototype.stop = function() {
 		self.pc.close(); 
 		self.pc = null; 
 	}
+
+	self.sendMessage({type: 'hangup'});
+
 }
 
 ///////////////////////////////////////////////////////////////////////////

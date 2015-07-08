@@ -1,16 +1,12 @@
 app.controller("mainCtrl", function($scope, $http) {
 
-	$scope.SERVER = SERVER_ADDRESS;
-	$scope.hideAccount = true;
-	$scope.hideRecents = false;
+	// $scope.SERVER = SERVER_ADDRESS;
 
 	$scope.hideErrorMsg = true;
 	$scope.hideSuccessMsg = true;
 	$scope.errormessage = ""; 
 	$scope.successmessage = "";
 
-	// UI init
-	$(".button-collapse").sideNav();
 
 	// Get user info
 	$http.get('/api/user', {}).
@@ -31,10 +27,6 @@ app.controller("mainCtrl", function($scope, $http) {
 		});
 
 
-	// $scope.start = function() {
-	// 	happy.maybeStart();
-	// }
-
 	$scope.call = function(email) {
 		$scope.happy.doCall(getHappyAddrByEmail(email)); 
 	}
@@ -45,25 +37,6 @@ app.controller("mainCtrl", function($scope, $http) {
 
 	$scope.hangup = function() {
 		$scope.happy.hangup();
-	}
-
-	$scope.focusSearch = function() {
-		angular.element('#search').focus()
-	};
-
-	$scope.showAccount = function() {
-		$scope.hideAccount = false;
-		$scope.hideRecents = true;
-	}
-
-	$scope.showRecents = function() {
-		$scope.hideAccount = true;
-		$scope.hideRecents = false;
-
-
-		// Calling stuff, just prototyping and testing here
-
-
 	}
 
 	$scope.updateUserInfo = function(account) {
@@ -91,6 +64,8 @@ app.controller("mainCtrl", function($scope, $http) {
 				}
 			});
 	}
+
+
 
 	$scope.setSuccess = function(success) {;
 		$scope.successmessage = success;
