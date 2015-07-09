@@ -1,12 +1,20 @@
-app.controller("mainCtrl", function($scope, $http) {
-
-	// $scope.SERVER = SERVER_ADDRESS;
+app.controller("mainCtrl", function($scope, $http, $rootScope) {
+	$scope.pageClass = 'page-main';
 
 	$scope.hideErrorMsg = true;
 	$scope.hideSuccessMsg = true;
 	$scope.errormessage = ""; 
 	$scope.successmessage = "";
 
+
+	$scope.$on('$routeChangeSuccess', function () {
+		$('.tabs').tabs();
+	    $(".menu").sideNav();
+	    $('.collapsible').collapsible({
+     		 accordion : false // A setting that changes the collapsible behavior to expandable instead of the default accordion style
+    	});
+
+	});
 
 	// Get user info
 	$http.get('/api/user', {}).
@@ -17,9 +25,10 @@ app.controller("mainCtrl", function($scope, $http) {
 			$scope.email = data.email; 
 			$scope.happy_addr = data.happy_addr;
 			$scope.contacts = data.contacts;
+			$rootScope.contacts = data.contacts;
 
 			// initialize happy
-			$scope.happy = new Happy({defaultRoom: $scope.happy_addr}); 
+			$rootScope.happy = new Happy({defaultRoom: $scope.happy_addr}); 
 		}).
 
 		error(function(data, status, headers, config) {
@@ -28,15 +37,15 @@ app.controller("mainCtrl", function($scope, $http) {
 
 
 	$scope.call = function(email) {
-		$scope.happy.doCall(getHappyAddrByEmail(email)); 
+		$rootScope.happy.doCall(getHappyAddrByEmail(email)); 
 	}
 
 	$scope.answer = function() {
-		$scope.happy.doAnswer();
+		$rootScope.happy.doAnswer();
 	}
 
 	$scope.hangup = function() {
-		$scope.happy.hangup();
+		$rootScope.happy.hangup();
 	}
 
 	$scope.updateUserInfo = function(account) {

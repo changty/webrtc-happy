@@ -1,0 +1,163 @@
+	<!-- ringer, implemented in webrtc happy -->
+	<!-- this needs to be added dynamically later on... -->
+	<div class="ring hidden">
+		<video class="localVideo" id="localVideo"></video>
+		<video class="remoteVideo" id="remoteVideos"></video>
+		<!-- button to hangup during the call -->
+		<a id="hang-up-during-call" class="center-element btn-ring btn-floating btn-large waves-effect waves-light red" ng-click="hangup()"><i class="material-icons">call_end</i></a>
+	</div><!-- end of ringer -->
+
+	<!-- navigation -->
+	<nav class="">
+		<div class="nav-wrapper">
+			<a href="#" class="happy-nav brand-logo center">happpy</a>
+ 			<a href="#" data-activates="side-nav" class="menu"><i class="material-icons">menu</i></a>
+
+			<ul class="side-nav" id="side-nav">
+				<li><a href="#">Chat</a></li>
+				<li><a href="#">Test</a></li>
+				<li><a href="#">Content</a></li>
+				<li><a href="#">...</a></li>
+			</ul>
+		</div>
+	</nav><!-- end of navigatoin -->
+
+	<!-- tab bar -->
+	<div class="col s12">
+		<ul class="tabs">
+			<li class="tab col s4"><a class="active" href="#recents">Chats</a></li>
+			<li class="tab col s4"><a href="#contacts">Contacts</a></li>
+			<li class="tab col s4"><a href="#settings">Settings</a></li>
+		</ul>
+	</div> <!-- end of tab bar -->
+
+	<!-- Recent chats view --> 
+	<div class="container" id="recents">
+	 	<h3>Recent chats</h3>
+	</div>
+	<!-- End of recent chats view --> 
+
+	<!-- Account settings	--> 
+ 	<div class="container" id="settings">
+ 		<h3>Account settings</h3>
+
+			<form name="account" class="col s12" ng-submit="updateUserInfo(account)" method="post">
+
+			 		<!-- First name -->
+			 	<div class="row">
+						 <div class="input-field col s12 m12 l6">
+							 <i class="mdi-content-create prefix"></i>
+							 <input name="fname" id="first_name" type="text" pattern=".{2,}" class="validate" ng-model="fname">
+							 <label for="first_name" class="active">First Name</label>
+						 </div>
+
+						 <!-- Last name -->
+						 <div class="input-field col s12 m12 l6">
+							 <i class="mdi-content-create prefix"></i>
+							 <input name="lname" id="last_name" type="text" pattern=".{2,}" class="validate" ng-model="lname">
+							 <label class="active" for="last_name">Last Name</label>
+						 </div>
+					 </div>
+
+		 		<!-- email -->
+				<div class="row">
+					<div class="input-field col s12">
+							<i class="mdi-communication-email prefix"></i>
+						 	<input name="email" id="email" type="email" class="validate" ng-model="email">
+						 	<label ng-class="active" class="active" for="email">Email</label>
+						</div>
+					</div>
+
+
+					<!-- password -->
+					<div class="row">
+						<div class="input-field col s12">
+							<i class="mdi-action-lock-open prefix"></i>
+						 	<input name="password" id="password" type="password" class="validate" ng-model="password" pattern=".{6,}" ng-minlength="6" >
+								<label for="password">Password</label>
+						</div>
+					</div>
+
+
+
+				 	<div class="row" ng-hide="hideErrorMsg">
+						<div class="col s12 m5 center-element">
+							<div class="card-panel red lighten-4">
+								<span class="black-text">{{errormessage}}
+								</span>
+							</div>
+						</div>
+					</div>
+
+				 	<div class="row" ng-hide="hideSuccessMsg">
+						<div class="col s12 m5 center-element">
+							<div class="card-panel teal">
+								<span class="white-text">{{successmessage}}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					 <div class="row">
+					 	<div class="col s6">
+							<button	class="btn waves-effect waves-light btn-large center-element" type="submit">save
+							<i class="mdi-content-send right"></i>
+						</button>
+					</div>
+
+					<div class="col s6">
+						<button ng-click="showRecents()" class="btn waves-effect waves-light btn-large center-element">Back <i class="mdi-navigation-close left"></i></button>
+					</div>
+				</div>
+		 	</form>
+
+			<div class="divider"></div>
+		 	<div class="row">
+			 		<a class="center-element btn btn-large red" href="/api/logout"><i class="material-icons">power_settings_new</i> Logout</a>
+		 	</div>
+
+		</div>
+		<!-- End of account settings	--> 
+
+
+		<!-- Contacts view -->
+		<div class="" id="contacts">
+			<!-- List of contacts -->
+			<div class="section">
+		 		 <ul class="collapsible popout contacts" data-collapsible="accordion">
+		 		 	<li ng-repeat="contact in contacts" contacts-loop-directive>
+					
+					<div class="collapsible-header"><i class="large material-icons">perm_identity</i>{{contact.fname}} {{contact.lname}}</div>
+					<div class="collapsible-body">
+						<p>{{contact.email}}</p>
+
+						<div class="grey lighten-4 footer-copyright">
+							<div class="container">
+								<a class="left waves-effect waves-teal btn-flat" ng-click="call(contact.email)"><i class="material-icons">phone</i> Call</a>
+
+								<a class="right waves-effect waves-teal btn-flat" href="/p/chat/{{contact.email}}"><i class="material-icons">chat_bubble_outline</i> Chat</a>
+							</div>
+						</div>
+					</div>
+					</li>
+			 		 <li>
+						<div class="collapsible-header"><i class="mdi-maps-place"></i>Dummy</div>
+						<div class="collapsible-body"><p>email</p></div>
+					</li>
+		 		 </ul><!-- end of contacts -->
+		 	</div><!-- section -->
+		</div>
+		<!-- end of contacts -->
+
+<!-- A modal window that informs of incoming call -->
+<div id="ringing" class="modal">
+	<div class="modal-content">
+		<h4>Incoming call</h4>
+		<p>from...</p>
+	</div>
+	<div class="modal-footer">
+			<a class="btn waves-effect waves-light green" ng-click="answer()"><i class="material-icons">call</i></a>
+			
+		<a class="btn waves-effect waves-light red" ng-click="hangup()"><i class="material-icons">call_end</i></a>
+	</div>
+</div>

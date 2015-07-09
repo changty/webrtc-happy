@@ -2,195 +2,56 @@
 <html>
 <head>
 	<title>WebRTC Happy example</title>
-
-    <link type="text/css" rel="stylesheet" href="/components/materialize/dist/css/materialize.min.css"  media="screen,projection"/>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="/components/emojione/assets/css/emojione.min.css" rel="stylesheet" type="text/css"/>
-
-
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+	
+	<link type="text/css" rel="stylesheet" href="/components/materialize/dist/css/materialize.min.css"	media="screen,projection"/>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="/components/emojione/assets/css/emojione.min.css" rel="stylesheet" type="text/css"/>
 
 	<link rel="stylesheet" type="text/css" href="/stylesheets/style.css"/>
+
+	<script src="/components/jquery/dist/jquery.min.js"></script>
+	<script src="/components/angular/angular.js"></script>
+	<script src="/components/angular-animate/angular-animate.min.js"></script>
+	<script src="/components/angular-route/angular-route.min.js"></script>
+	<script src="/components/materialize/dist/js/materialize.min.js"></script>
+
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/components/webrtc-adapter/adapter.js"></script>
+	<script src="/components/emojione/lib/js/emojione.min.js"></script>
+	<script src="/scripts/WebRTCHappy.js"></script>
+	<script src="/scripts/controllers/mainCtrl.js"></script>
+	<script src="/scripts/controllers/chatCtrl.js"></script>
+	<script src="/scripts/happycaller.js"></script>
+
 </head>
-    <body class="" ng-app="WebRTCHappy">
-	
-    <div ng-controller="mainCtrl">
-
-		<video class="localVideo hidden" id="localVideo"></video>
-		<video class="remoteVideo hidden" id="remoteVideos"></video>
-		<!-- button to hangup during the call -->
-	    <a id="hang-up-during-call" class="hidden center-element btn-ring btn-floating btn-large waves-effect waves-light red" ng-click="hangup()"><i class="material-icons">call_end</i></a>
-
-	    <nav class="">
-	    	<div class="nav-wrapper">
-	    		<a href="#" class="happy-nav brand-logo center">happpy</a>
-	    	</div>
-	    </nav>
-
-	    <div class="col s12">
-	      <ul class="tabs">
-	        <li class="tab col s4"><a class="active" href="#recents">Chats</a></li>
-	        <li class="tab col s4"><a href="#contacts">Contacts</a></li>
-	        <li class="tab col s4"><a href="#settings">Settings</a></li>
-	      </ul>
-	    </div>
-
-	    <!-- Recent chats view --> 
-
-	   	<div class="container" id="recents">
-	   	<h2>Recent chats</h2>
-	   		
-		</div>
-
-	    <!-- End of recent chats view --> 
-
-	    <!-- Account settings  --> 
-
-	   	<div class="container" id="settings">
-	   		<h2>Account settings</h2>
-
- 				<form name="account" class="col s12" ng-submit="updateUserInfo(account)" method="post">
-
-			   		<!-- First name -->
-				 	<div class="row">
-				       <div class="input-field col s6 m12">
-    				     <i class="mdi-content-create prefix"></i>
-				         <input name="fname" id="first_name" type="text" pattern=".{2,}" class="validate" ng-model="fname">
-				         <label for="first_name" class="active">First Name</label>
-				       </div>
-
-				       <!-- Last name -->
-				       <div class="input-field col s6 m12">
-				         <i class="mdi-content-create prefix"></i>
-				         <input name="lname" id="last_name" type="text" pattern=".{2,}" class="validate" ng-model="lname">
-				         <label class="active" for="last_name">Last Name</label>
-				       </div>
-				     </div>
-
-			   		<!-- email -->
-					<div class="row">
-				        <div class="input-field col s12">
-				        	<i class="mdi-communication-email prefix"></i>
-				         	<input name="email" id="email" type="email" class="validate" ng-model="email">
-				         	<label ng-class="active" class="active" for="email">Email</label>
-				        </div>
-				      </div>
 
 
-				      <!-- password -->
-				      <div class="row">
-				        <div class="input-field col s12">
-				        	<i class="mdi-action-lock-open prefix"></i>
-				         	<input name="password" id="password" type="password" class="validate" ng-model="password" pattern=".{6,}" ng-minlength="6" >
-				          	<label for="password">Password</label>
-				        </div>
-				      </div>
+<!-- apply our angular app -->
+<body ng-app="WebRTCHappy">
+<base href="/">
+
+    <!-- inject our views using ng-view -->
+    <!-- each angular controller applies a different class here -->
+    <div class="page {{ pageClass }}" ng-view></div>
+        
+</body>
 
 
 
-			   	<div class="row" ng-hide="hideErrorMsg">
-			      <div class="col s12 m5 center-element">
-			        <div class="card-panel red lighten-4">
-			          <span class="black-text">{{errormessage}}
-			          </span>
-			        </div>
-			      </div>
-			    </div>
 
-			   	<div class="row" ng-hide="hideSuccessMsg">
-			      <div class="col s12 m5 center-element">
-			        <div class="card-panel teal">
-			          <span class="white-text">{{successmessage}}
-			          </span>
-			        </div>
-			      </div>
-			    </div>
+	<script>	
 
-				     <div class="row">
-				     	<div class="col s6">
-					    	<button  class="btn waves-effect waves-light btn-large center-element" type="submit">save
-						    <i class="mdi-content-send right"></i>
-						  </button>
-						</div>
+	// var test = "Like it or not, the world is going gaga for emoji! What's not to 😍 right? Adorable packaged miniature art that tells a story words just can't express. Stormy weather outside? It's ☔🐱🐶out here! Hungry? I would 🔫4⃣🍔🍟! Emoji have simply 🏆 a special place in our 💞. The 🌎 rapidly embraced these tiny pictographs express feelings of emotion defying all language barriers. Except for one big problem. 🙈";
 
-						<div class="col s6">
-							<button ng-click="showRecents()" class="btn waves-effect waves-light btn-large center-element">Back <i class="mdi-navigation-close left"></i></button>
-						</div>
-					</div>
-			   	</form>
+	// var shortCode = emojione.toShort(test);
+	// console.log("Original: ", test); 
+	// console.log("To short code: ", shortCode);
+	// console.log("To images: ", emojione.shortnameToImage(shortCode));
 
-  				<div class="divider"></div>
-			   	<div class="row">
-  			   		<a class="center-element btn btn-large red" href="/api/logout"><i class="material-icons">power_settings_new</i> Logout</a>
-			   	</div>
+	</script>
 
-		</div>
-
-		<div class="" id="contacts">
-			<!-- List of contacts -->
-			<div class="section">
-	   		 <ul class="collapsible popout contacts" data-collapsible="accordion">
-	   		 	<li ng-repeat="contact in contacts" contacts-loop-directive>
-					
-					<div class="collapsible-header"><i class="large material-icons">perm_identity</i>{{contact.fname}} {{contact.lname}}</div>
-					<div class="collapsible-body">
-						<p>{{contact.email}}</p>
-
-						<div class="grey lighten-4 footer-copyright">
-							<div class="container">
-								<a class="waves-effect waves-teal btn-flat" ng-click="call(contact.email)"><i class="material-icons">phone</i> Call</a>
-							</div>
-						</div>
-
-					</div>
-				</li>
-	   		 	<li>
-					<div class="collapsible-header"><i class="mdi-maps-place"></i>Dummy</div>
-					<div class="collapsible-body"><p>email</p></div>
-				</li>
-	   		 </ul><!-- end of contacts -->
-	   		 </div><!-- section -->
-		</div>
-	    <!-- End of account settings  --> 
-
-
-		<div id="ringing" class="modal">
-				<div class="modal-content">
-					<h4>Incoming call</h4>
-					<p>from...</p>
-				</div>
-				<div class="modal-footer">
-		    		<a class="btn waves-effect waves-light green" ng-click="answer()"><i class="material-icons">call</i></a>
-						
-					<a class="btn waves-effect waves-light red" ng-click="hangup()"><i class="material-icons">call_end</i></a>
-				</div>
-			</div>
-
-		</div>
-
-
-	    <script src="/components/jquery/dist/jquery.min.js"></script>
-	    <script src="/components/materialize/dist/js/materialize.min.js"></script>
-	    <script src="/components/angular/angular.js"></script>
-	    <script src="/socket.io/socket.io.js"></script>
-	    <script src="/components/webrtc-adapter/adapter.js"></script>
-	    <script src="/components/emojione/lib/js/emojione.min.js"></script>
-	    <script src="/scripts/WebRTCHappy.js"></script>
-	    <script src="/scripts/controllers/mainCtrl.js"></script>
-	    <script src="/scripts/happycaller.js"></script>
-
-	    <script>	
-
-	    var test = "Like it or not, the world is going gaga for emoji! What's not to 😍 right? Adorable packaged miniature art that tells a story words just can't express. Stormy weather outside? It's ☔🐱🐶out here! Hungry? I would 🔫4⃣🍔🍟! Emoji have simply 🏆 a special place in our 💞. The 🌎 rapidly embraced these tiny pictographs express feelings of emotion defying all language barriers. Except for one big problem. 🙈";
-
-	    var shortCode = emojione.toShort(test);
-	    console.log("Original: ", test); 
-	    console.log("To short code: ", shortCode);
-	    console.log("To images: ", emojione.shortnameToImage(shortCode));
-
-	    </script>
-
-	</body>
 </html>
 
 

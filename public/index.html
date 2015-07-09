@@ -13,7 +13,7 @@
 <body class="happy-dark" ng-app="WebRTCHappy">
 
     <div class="container" ng-controller="loginCtrl">
-	   	<h1 class="happy white-text">happy</h1>
+	   	<h1 class="happy happy-text">happy</h1>
 
 	   		<!-- login form -->
 		   	<div ng-hide="hideLogin" class="row">
@@ -38,7 +38,7 @@
 			      </div>
 
 			      <!-- Submit button -->
-				    <button ng-disabled="loginform.username.$invalid || loginform.password.$invalid" class="btn waves-effect waves-light btn-large center" type="submit">login
+				    <button ng-disabled="loginform.username.$invalid || loginform.password.$invalid" class="btn waves-effect waves-light btn-large center-element" type="submit">login
 					    <i class="mdi-content-send right"></i>
 					  </button>
 
@@ -67,7 +67,7 @@
 			      </div>
 
 			   	<div class="row" ng-hide="hideErrorMsg">
-			      <div class="col s12 m5 center">
+			      <div class="col s12 m5 center-element">
 			        <div class="card-panel red lighten-4">
 			          <span class="black-text">{{errormessage}}
 			          </span>
@@ -76,7 +76,7 @@
 			    </div>
 
 			   	<div class="row" ng-hide="hideSuccessMsg">
-			      <div class="col s12 m5 center">
+			      <div class="col s12 m5 center-element">
 			        <div class="card-panel teal">
 			          <span class="white-text">{{successmessage}}
 			          </span>
@@ -87,7 +87,7 @@
 
 				      <!-- submit button -->
 					  <div class="row">
-			  			  <button ng-disabled="forgotPw.email.$invalid" class="btn waves-effect waves-light btn-large center" type="submit">Reset password
+			  			  <button ng-disabled="forgotPw.email.$invalid" class="btn waves-effect waves-light btn-large center-element" type="submit">Reset password
 					    <i class="mdi-content-send right"></i>
 					  </button>
 					  </div>
@@ -142,7 +142,7 @@
 
 
 			   	<div class="row" ng-hide="hideErrorMsg">
-			      <div class="col s12 m5 center">
+			      <div class="col s12 m5 center-element">
 			        <div class="card-panel red lighten-4">
 			          <span class="black-text">{{errormessage}}
 			          </span>
@@ -151,7 +151,7 @@
 			    </div>
 
 			   	<div class="row" ng-hide="hideSuccessMsg">
-			      <div class="col s12 m5 center">
+			      <div class="col s12 m5 center-element">
 			        <div class="card-panel teal">
 			          <span class="white-text">{{successmessage}}
 			          </span>
@@ -160,7 +160,7 @@
 			    </div>
 
 				     <div class="row">
-					    	<button ng-disabled="register.fname.$invalid || register.lname.$invalid || register.email.$invalid || register.password.$invalid" class="btn waves-effect waves-light btn-large center" type="submit">Register
+					    	<button ng-disabled="register.fname.$invalid || register.lname.$invalid || register.email.$invalid || register.password.$invalid" class="btn waves-effect waves-light btn-large center-element" type="submit">Register
 						    <i class="mdi-content-send right"></i>
 						  </button>
 					</div>

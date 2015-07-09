@@ -281,6 +281,7 @@ router.use(function(req, res, next) {
 
 staticFiles.use(function(req, res, next) {
 	console.log(">> file request: \t", req.method, req.url);
+    if(req.url)
 	next();
 });
 
@@ -303,6 +304,13 @@ staticFiles.use(express.static(__dirname + '/public'));
 
 app.use('/api', router); 
 app.use('/', staticFiles); 
+
+
+// allow page refresh using ngRoutes
+app.get('*', function(req, res) {
+    res.sendFile(__dirname + '/public/' + 'main.html'); 
+});
+
 
 // run express
 http.listen(port, function() {

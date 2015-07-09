@@ -267,6 +267,9 @@ Happy.prototype.doCall = function(to) {
 
 	self.trace('Creating offer to peer ', to); 
 	self.pc.createOffer(self.setLocalAndSendMessage.bind(self), self.handleCreateOfferError.bind(self));
+
+
+	self.showRingingScreen();
 }
 
 Happy.prototype.doAnswer = function() {
@@ -277,15 +280,26 @@ Happy.prototype.doAnswer = function() {
 	}
 
 	// forwardTo is already set in "offer"
-
-  	$('.remoteVideo').removeClass('hidden');
-  	$('.localVideo').removeClass('hidden');
-  	$('#hang-up-during-call').removeClass('hidden');
-  	$('#ringing').closeModal();
-
+	self.showRingingScreen();
 
 	self.trace('Sending answer to peer'); 
 	self.pc.createAnswer(self.setLocalAndSendMessage.bind(self), null, self.sdpConstraints);
+}
+
+Happy.prototype.showRingingScreen = function() {
+	var self = this; 
+
+	$('.ring').removeClass('hidden');
+
+	// if you answer...
+  	$('#ringing').closeModal();
+}
+
+Happy.prototype.hideRingingScreen = function() {
+	var self = this;
+
+  	$('#ringing').closeModal();
+  	$('.ring').addClass('hidden');
 }
 
 Happy.prototype.setLocalAndSendMessage = function(sessionDescription) {
@@ -356,10 +370,7 @@ Happy.prototype.handleRemoteStreamRemoved = function(event) {
 Happy.prototype.hangup = function() {
 	var self = this; 
 
-  	$('#ringing').closeModal();
-  	$('.remoteVideo').addClass('hidden');
-  	$('.localVideo').addClass('hidden');
-  	$('#hang-up-during-call').addClass('hidden');
+	self.hideRingingScreen();
 
   	if(self.localVideo) {
 	  	self.localVideo.pause();
