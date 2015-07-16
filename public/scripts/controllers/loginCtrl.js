@@ -1,5 +1,8 @@
 app.controller("loginCtrl", function($scope, $http) {
 
+	$scope.pageClass = 'page-main';
+
+
 	$scope.hideLogin = false;
 	$scope.hideForgotPassword = true;
 	$scope.hideNewUser = true;

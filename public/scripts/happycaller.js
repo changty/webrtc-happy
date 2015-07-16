@@ -3,15 +3,10 @@ Happy = function(options) {
 
 	this.options = {
 		server: 'http://192.168.0.16:3333',
-		localVideo: $('.localVideo')[0],
-		remoteVideo: $('.remoteVideo')[0],
 		myAddress: "my-default-room" 
 	}
 
 	$.extend(this.options, options);
-
-	this.localVideo = this.options.localVideo;
-	this.remoteVideo = this.options.remoteVideo;
 
 	this.localStream; 
 	this.remoteStream;
@@ -51,6 +46,24 @@ Happy = function(options) {
 
 	// for testing purposes only, room handling needs to be done in a different manner
 	this.myHappyAddress = this.options.defaultRoom;
+
+	// ringing screen
+	this.ring = ''+
+	'<div class="ring hidden">'
+		+'<video class="localVideo" id="localVideo"></video>'
+		+'<video class="remoteVideo" id="remoteVideos"></video>'
+
+		+'<div class="call-status">'
+		+'<h2 class="white-text">Calling...</h2>'
+		+'</div>'
+
+		+'<div class="call-buttons">'
+			+'<a id="answer" class="btn-ring btn-floating btn-large waves effect waves-light green"><i class="material-icons">call</i></a>'
+			+'<a id="hang-up" class="btn-ring btn-floating btn-large waves-effect waves-light red"><i class="material-icons">call_end</i></a>'
+		+'</div>'
+	+'</div>';
+
+	$('body').append(self.ring);
 
 	// connect to socket server
 	this.socket = io();
@@ -98,7 +111,7 @@ Happy = function(options) {
 				self.pc.setRemoteDescription(new RTCSessionDescription(message.data));
 			}
 
-			self.ring();
+			self.showRingingScreen();
 			// self.doAnswer(message.from);
 		}
 
@@ -129,23 +142,35 @@ Happy = function(options) {
 	});
 
 	self.init();
+
+
+	// listen for answer or hangup
+	$('body').on('click', '#answer', function() {
+		self.doAnswer();
+	});
+
+	$('body').on('click', '#hang-up', function() {
+		self.hangup();
+	});
+
 }
+
 
 Happy.prototype.init = function() {
 	var self = this; 
 
 
-	var constraints = {video: true, audio:true}; 
-	getUserMedia(constraints, self.handleUserMedia.bind(self), self.handleUserMediaError.bind(self));
-
 	// var constraints = {video: true, audio:true}; 
-	// getUserMedia(constraints, 
-	// 	function(stream) {
-	// 		self.trace('Asking permission');
-	// 		self.localStream = stream;
-	// 	}, 
-	// 	function(err){self.trace('Error: ', err);}
-	// 	);
+	// getUserMedia(constraints, self.handleUserMedia.bind(self), self.handleUserMediaError.bind(self));
+
+	var constraints = {video: true, audio:true}; 
+	getUserMedia(constraints, 
+		function(stream) {
+			self.trace('Asking permission');
+			self.localStream = stream;
+		}, 
+		function(err){self.trace('Error: ', err);}
+		);
 	
 	if (location.hostname != "localhost") {
 		self.requestTurn('https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913');
@@ -166,7 +191,8 @@ Happy.prototype.handleUserMedia = function(stream) {
 	var self = this; 
 
 	self.localStream = stream;
-	self.localVideo.src = window.URL.createObjectURL(self.localStream); 
+	self.localVideo = $('.localVideo')[0];
+	self.localVideo.src = window.URL.createObjectURL(stream); 
 	self.localVideo.addEventListener('canplay', function() {
 		self.localVideo.play();
 	});
@@ -181,8 +207,10 @@ Happy.prototype.handleUserMedia = function(stream) {
 Happy.prototype.playUserMedia = function() {
 	var self = this;
 
-	self.trace('Starting video and audio stream');
+	var constraints = {video: true, audio:true}; 
+	getUserMedia(constraints, self.handleUserMedia.bind(self), self.handleUserMediaError.bind(self));
 
+	self.trace('Starting video and audio stream');
 	self.trace('Showing local stream'); 
 	// self.localStream = stream; 
 }
@@ -257,6 +285,8 @@ Happy.prototype.handleCreateOfferError = function(event) {
 Happy.prototype.doCall = function(to) {
 	var self = this; 
 
+	self.showRingingScreen(true);
+
 	self.playUserMedia();
 
 	if(!self.pc) {
@@ -267,9 +297,6 @@ Happy.prototype.doCall = function(to) {
 
 	self.trace('Creating offer to peer ', to); 
 	self.pc.createOffer(self.setLocalAndSendMessage.bind(self), self.handleCreateOfferError.bind(self));
-
-
-	self.showRingingScreen();
 }
 
 Happy.prototype.doAnswer = function() {
@@ -280,25 +307,33 @@ Happy.prototype.doAnswer = function() {
 	}
 
 	// forwardTo is already set in "offer"
-	self.showRingingScreen();
 
+	$('.call-status').html('<h2 class="white-text">Connected</h2>');
 	self.trace('Sending answer to peer'); 
 	self.pc.createAnswer(self.setLocalAndSendMessage.bind(self), null, self.sdpConstraints);
+	// hide answer button
+	$('#answer').addClass('hidden');
 }
 
-Happy.prototype.showRingingScreen = function() {
+Happy.prototype.showRingingScreen = function(isCalling) {
 	var self = this; 
 
 	$('.ring').removeClass('hidden');
 
-	// if you answer...
-  	$('#ringing').closeModal();
+	if(isCalling) {
+		$('.call-status').html('<h2 class="white-text">Calling...</h2>');
+		// hide answer button
+		$('#answer').addClass('hidden');
+	}
+	else {
+		$('.call-status').html('<h2 class="white-text">Connected...</h2>');
+	}
+
 }
 
 Happy.prototype.hideRingingScreen = function() {
 	var self = this;
-
-  	$('#ringing').closeModal();
+	$('#answer').removeClass('hidden');
   	$('.ring').addClass('hidden');
 }
 
@@ -354,6 +389,7 @@ Happy.prototype.handleRemoteStreamAdded = function(event) {
 	var self = this; 
 
 	self.trace('Remote stream added', event.stream);
+	self.remoteVideo = $('.remoteVideo')[0]
 	self.remoteVideo.src = window.URL.createObjectURL(event.stream); 
 	self.remoteStream = event.stream; 
 
@@ -370,7 +406,9 @@ Happy.prototype.handleRemoteStreamRemoved = function(event) {
 Happy.prototype.hangup = function() {
 	var self = this; 
 
-	self.hideRingingScreen();
+
+	self.localVideo = $('.localVideo')[0];
+	self.remoteVideo = $('.remoteVideo')[0];
 
   	if(self.localVideo) {
 	  	self.localVideo.pause();
@@ -380,6 +418,8 @@ Happy.prototype.hangup = function() {
 	  	self.remoteVideo.pause();
 	  	self.remoteVideo.src = null; 
   	}
+
+	self.hideRingingScreen();
 
   	// self.localStream = null;
 
@@ -405,13 +445,6 @@ Happy.prototype.stop = function() {
 
 	self.sendMessage({type: 'hangup'});
 
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-Happy.prototype.ring = function() {
-	var self = this; 
-  	$('#ringing').openModal();
 }
 
 

@@ -16,6 +16,11 @@ app.config(function($routeProvider, $locationProvider) {
 			controller: 'chatCtrl'
 		})
 
+		.when('/p/addcontact', {
+			templateUrl: 'page-addcontact.html',
+			controller: 'addContactCtrl'
+		})
+
 		.otherwise({
 			redirectTo: '/'
 		});

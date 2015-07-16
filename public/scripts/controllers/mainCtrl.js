@@ -40,14 +40,6 @@ app.controller("mainCtrl", function($scope, $http, $rootScope) {
 		$rootScope.happy.doCall(getHappyAddrByEmail(email)); 
 	}
 
-	$scope.answer = function() {
-		$rootScope.happy.doAnswer();
-	}
-
-	$scope.hangup = function() {
-		$rootScope.happy.hangup();
-	}
-
 	$scope.updateUserInfo = function(account) {
 		var data = {}; 
 		data.fname = $scope.fname;
@@ -74,9 +66,7 @@ app.controller("mainCtrl", function($scope, $http, $rootScope) {
 			});
 	}
 
-
-
-	$scope.setSuccess = function(success) {;
+	$scope.setSuccess = function(success) {
 		$scope.successmessage = success;
 		$scope.hideSuccessMsg = false;
 		$scope.hideErrorMsg = true;

@@ -79,6 +79,22 @@
 	z-index: 2;
 }
 
+.call-buttons {
+	position: absolute;
+	z-index: 9999999;
+	display: inline-block;
+	margin: 1em;
+	bottom: 2vmin;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.call-buttons a {
+	margin-left: 10vmin;
+	margin-right: 10vmin;
+	float:left;
+}
+
 #hang-up-during-call {
 	position:absolute;
 	bottom: 5vmin;
@@ -111,8 +127,22 @@
 }
 
 .chatinput {
+	border: 0 !important;
+	background: none !important;
 	margin-bottom: 0.3em !important; 
 }
+.chatinput:focus {
+	border: 0 !important;
+	outline: 0 !important;
+	background: none !important;
+	box-shadow: none !important;
+}
+.chatinput:active {
+	border:0 !important;
+	box-shadow: none !important;
+	background: none !important;
+}
+
 .sender .talk-bubble {
 	width: 80%;
 	padding: 0.1em 1.5em;
@@ -235,4 +265,9 @@
   /* remove webkit p margins */
   -webkit-margin-before: 0em;
   -webkit-margin-after: 0em;
+}
+
+.fixed-action-btn {
+	bottom: 2vmin;
+	right: 1vmin;
 }

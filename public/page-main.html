@@ -1,11 +1,6 @@
 	<!-- ringer, implemented in webrtc happy -->
 	<!-- this needs to be added dynamically later on... -->
-	<div class="ring hidden">
-		<video class="localVideo" id="localVideo"></video>
-		<video class="remoteVideo" id="remoteVideos"></video>
-		<!-- button to hangup during the call -->
-		<a id="hang-up-during-call" class="center-element btn-ring btn-floating btn-large waves-effect waves-light red" ng-click="hangup()"><i class="material-icons">call_end</i></a>
-	</div><!-- end of ringer -->
+
 
 	<!-- navigation -->
 	<nav class="">
@@ -146,6 +141,12 @@
 					</li>
 		 		 </ul><!-- end of contacts -->
 		 	</div><!-- section -->
+
+		 <div class="fixed-action-btn">
+	 	 	<a class="btn-floating btn-large waves-effect waves-light red" href="/p/addcontact"><i class="material-icons">add</i></a>
+	 	 </div>
+
+
 		</div>
 		<!-- end of contacts -->
 
